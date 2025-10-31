@@ -7,7 +7,7 @@
 	@vite(['resources/css/app.css','resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-slate-50">
-	<div class="flex min-h-screen">
+    <div class="flex min-h-screen">
 		@include('navigation.sidebar')
 		<main class="flex-1 px-6 py-6">
 			<!-- Top bar -->
@@ -16,8 +16,7 @@
 					<span class="i-heroicons-user"></span>
 				</div>
 			</div>
-
-			{{ $slot ?? '' }}
+            @yield('content')
 		</main>
 	</div>
 </body>

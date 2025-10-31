@@ -1,5 +1,7 @@
+@extends('layouts.app')
+
+@section('content')
 @php($email = auth()->user()->email)
-@include('layouts.app', ['title' => 'Home'])
 
 <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
 	<!-- Hero welcome card with image background -->
@@ -88,3 +90,4 @@
 	render();
 })();
 </script>
+@endsection

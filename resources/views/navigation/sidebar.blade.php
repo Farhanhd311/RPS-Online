@@ -16,7 +16,7 @@
 				<span class="i-heroicons-user"></span>
 				Profil Biodata
 			</a>
-			<a href="#" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700">
+			<a href="{{ route('fakultas.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 {{ request()->routeIs('fakultas.index') ? 'bg-emerald-50 text-emerald-700' : '' }}">
 				<span class="i-heroicons-building-office"></span>
 				Fakultas
 			</a>

@@ -37,9 +37,9 @@
 			</div>
 		</div>
 		<div class="col-span-12 lg:col-span-4">
-			<div class="rounded-xl border border-slate-200 p-4 shadow-sm bg-white">
+			<a href="{{ route('fakultas.struktur', ['code'=>$code]) }}" class="block rounded-xl border border-slate-200 p-4 shadow-sm hover:border-emerald-400 bg-white">
 				<p class="font-medium">Struktur Organisasi</p>
-			</div>
+			</a>
 		</div>
 	</div>
 

@@ -17,4 +17,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/fakultas/{code}/program-studi', [FacultyController::class, 'programs'])->name('fakultas.programs');
     Route::get('/fakultas/{code}/program-studi/{slug}', [FacultyController::class, 'programDetail'])->name('fakultas.program.detail');
     Route::get('/fakultas/{code}/rps', [FacultyController::class, 'rps'])->name('fakultas.rps');
+    Route::get('/fakultas/{code}/struktur', function (string $code) {
+        return view('fakultas.struktur', ['code' => $code]);
+    })->name('fakultas.struktur');
 });

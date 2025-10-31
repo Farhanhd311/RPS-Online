@@ -2,7 +2,7 @@
 
 @section('content')
 <div
-	class="grid grid-cols-12 gap-6"
+	class="mt-4 grid grid-cols-12 gap-6"
 	x-data="facultyPage({{ json_encode($faculties) }})"
 >
 	<!-- Left: List -->

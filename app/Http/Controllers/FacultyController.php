@@ -193,5 +193,3 @@ class FacultyController extends Controller
         ]);
     }
 }
-
-

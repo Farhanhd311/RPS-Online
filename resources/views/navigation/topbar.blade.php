@@ -5,7 +5,6 @@
 	</button>
 </div>
 
-
 <!-- Floating overlay + panel (does not push layout) -->
 <div id="profile-modal" class="fixed inset-0 z-50 hidden">
 	<div class="absolute inset-0 bg-black/20"></div>
@@ -52,3 +51,4 @@
 	document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape') close(); });
 })();
 </script>
+

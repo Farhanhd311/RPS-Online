@@ -2,11 +2,18 @@
 
 @section('content')
 <div x-data='rpsPage({{ json_encode($semesters) }})' class="space-y-6 mt-4">
-    <div class="flex items-center gap-3">
-        <a href="{{ route('fakultas.program.detail', ['code'=>$code, 'slug'=>'program-studi-s1-sistem-informasi']) }}" class="inline-flex items-center">
-            <img src="{{ asset('images/back.png') }}" alt="Back" class="h-7 w-7 object-contain" />
+    @php($userRole = auth()->user()->role ?? 'reviewer')
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <a href="{{ route('fakultas.program.detail', ['code'=>$code, 'slug'=>'program-studi-s1-sistem-informasi']) }}?role={{ $userRole }}" class="inline-flex items-center">
+                <img src="{{ asset('images/back.png') }}" alt="Back" class="h-7 w-7 object-contain" />
+            </a>
+            <h1 class="text-3xl font-extrabold text-emerald-700">S1 Sistem Informasi</h1>
+        </div>
+        <a href="{{ route('reviewer.review_rps', ['code'=>$code]) }}" class="px-6 py-2.5 rounded-xl bg-blue-600 text-white font-semibold shadow hover:bg-blue-700 inline-flex items-center gap-2">
+            <span class="i-heroicons-clipboard-document-check"></span>
+            Review RPS
         </a>
-        <h1 class="text-3xl font-extrabold text-emerald-700">S1 Sistem Informasi</h1>
     </div>
 	<div class="bg-white rounded-xl p-6 shadow-sm ring-1 ring-slate-100">
 		<p class="font-semibold text-slate-800">Pilih Semester</p>
@@ -28,6 +35,7 @@
 					<p class="text-slate-800" x-text="c.name"></p>
 					<div class="flex items-center gap-6 text-emerald-700">
 						<a href="#" @click.prevent="view(c)" class="inline-flex items-center gap-2"><span class="i-heroicons-eye"></span>Lihat</a>
+						<a href="{{ route('reviewer.review_rps', ['code'=>$code]) }}" class="inline-flex items-center gap-2"><span class="i-heroicons-clipboard-document-check"></span>Review</a>
 						<a href="#" @click.prevent="download(c)" class="inline-flex items-center gap-2"><span class="i-heroicons-arrow-down-tray"></span>Unduh</a>
 					</div>
 				</div>
@@ -65,5 +73,4 @@ function rpsPage(semesters) {
 }
 </script>
 @endsection
-
 

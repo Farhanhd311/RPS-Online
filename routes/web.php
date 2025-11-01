@@ -18,6 +18,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/fakultas/{code}/program-studi/{slug}', [FacultyController::class, 'programDetail'])->name('fakultas.program.detail');
     Route::get('/fakultas/{code}/rps', [FacultyController::class, 'rps'])->name('fakultas.rps');
     Route::get('/fakultas/{code}/struktur', function (string $code) {
-        return view('fakultas.struktur', ['code' => $code]);
+        return view('mahasiswa.mahasiswa_struktur', ['code' => $code]);
     })->name('fakultas.struktur');
+    
+    // Dosen routes
+    Route::get('/dosen/{code}/input-rps', function (string $code) {
+        return view('dosen.dosen_input_rps', ['code' => $code]);
+    })->name('dosen.input_rps');
+    
+    // Reviewer routes
+    Route::get('/reviewer/{code}/review-rps', function (string $code) {
+        return view('reviewer.reviewer_review_rps', ['code' => $code]);
+    })->name('reviewer.review_rps');
 });

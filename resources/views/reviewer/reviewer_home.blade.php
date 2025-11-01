@@ -30,15 +30,15 @@
 		<div class="flex items-center justify-between">
 			<h3 class="text-lg font-bold text-slate-800">Kalender Akademik</h3>
 			<div class="flex items-center gap-2">
-				<button id="cal-prev" class="h-8 w-8 rounded-full bg-slate-100 grid place-items-center">‹</button>
-				<div id="cal-month" class="text-sm font-semibold text-slate-700"></div>
-				<button id="cal-next" class="h-8 w-8 rounded-full bg-slate-100 grid place-items-center">›</button>
+				<button id="cal-prev-reviewer" class="h-8 w-8 rounded-full bg-slate-100 grid place-items-center">‹</button>
+				<div id="cal-month-reviewer" class="text-sm font-semibold text-slate-700"></div>
+				<button id="cal-next-reviewer" class="h-8 w-8 rounded-full bg-slate-100 grid place-items-center">›</button>
 			</div>
 		</div>
 		<div class="mt-3 grid grid-cols-7 text-center text-xs font-semibold text-slate-500">
 			<span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
 		</div>
-		<div id="cal-grid" class="mt-2 grid grid-cols-7 gap-1 text-center text-sm"></div>
+		<div id="cal-grid-reviewer" class="mt-2 grid grid-cols-7 gap-1 text-center text-sm"></div>
 	</div>
 </div>
 
@@ -53,10 +53,10 @@
 
 <script>
 (function(){
-	const monthEl = document.getElementById('cal-month');
-	const gridEl = document.getElementById('cal-grid');
-	const prevBtn = document.getElementById('cal-prev');
-	const nextBtn = document.getElementById('cal-next');
+	const monthEl = document.getElementById('cal-month-reviewer');
+	const gridEl = document.getElementById('cal-grid-reviewer');
+	const prevBtn = document.getElementById('cal-prev-reviewer');
+	const nextBtn = document.getElementById('cal-next-reviewer');
 	let current = new Date();
 
 	function render(){
@@ -91,3 +91,4 @@
 })();
 </script>
 @endsection
+

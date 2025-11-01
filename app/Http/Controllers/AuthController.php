@@ -25,7 +25,9 @@ class AuthController extends Controller
 
         if (Auth::attempt([$field => $credentials['email'], 'password' => $credentials['password']], $request->boolean('remember'))) {
             $request->session()->regenerate();
-            return redirect()->intended('/home');
+            
+            // Redirect berdasarkan role
+            return $this->redirectByRole();
         }
 
         return back()->withErrors(['email' => 'Kredensial tidak valid'])->onlyInput('email');
@@ -33,7 +35,22 @@ class AuthController extends Controller
 
     public function home()
     {
-        return view('home');
+        // Redirect berdasarkan role
+        return $this->redirectByRole();
+    }
+
+    private function redirectByRole()
+    {
+        $user = Auth::user();
+        $role = $user->role ?? 'mahasiswa';
+
+        return match($role) {
+            'mahasiswa' => view('mahasiswa.mahasiswa_home'),
+            'dosen' => view('dosen.dosen_home'),
+            'reviewer' => view('reviewer.reviewer_home'),
+            'admin' => view('mahasiswa.mahasiswa_home'), // default untuk admin
+            default => view('mahasiswa.mahasiswa_home'), // fallback default
+        };
     }
 
     public function logout(Request $request)

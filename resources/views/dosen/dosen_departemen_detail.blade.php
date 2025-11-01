@@ -25,9 +25,10 @@
 		</div>
 	</div>
 
+	@php($userRole = auth()->user()->role ?? 'dosen')
 	<div class="grid grid-cols-12 gap-6">
 		<div class="col-span-12 lg:col-span-4">
-			<a href="{{ route('fakultas.rps', ['code'=>$code]) }}" class="block rounded-xl border border-slate-200 p-4 shadow-sm hover:border-emerald-400 bg-white">
+			<a href="{{ route('fakultas.rps', ['code'=>$code]) }}?role={{ $userRole }}" class="block rounded-xl border border-slate-200 p-4 shadow-sm hover:border-emerald-400 bg-white">
 				<p class="font-medium">Rencana Pembelajaran Semester (RPS)</p>
 			</a>
 		</div>
@@ -69,5 +70,4 @@
 	<!-- Sections intentionally left with titles only as requested -->
 </div>
 @endsection
-
 

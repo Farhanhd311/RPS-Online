@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class FacultyController extends Controller
 {
@@ -71,7 +72,7 @@ class FacultyController extends Controller
             ],
         ];
 
-        return view('fakultas.index', [
+        return view('mahasiswa.mahasiswa_fakultas', [
             'title' => 'Fakultas',
             'faculties' => $faculties,
         ]);
@@ -85,20 +86,20 @@ class FacultyController extends Controller
                 'stats' => ['departments' => 3, 'dosen' => 45, 'mahasiswa' => 45],
                 'programs' => [
                     [
+                        'name' => 'Program Studi S1 Teknik Komputer',
+                        'visi' => 'Menjadi rujukan nasional bidang rekayasa perangkat keras dan sistem terbenam.',
+                        'misi' => [
+                            'Menghasilkan lulusan kompeten pada rekayasa perangkat keras.',
+                            'Mendorong inovasi melalui riset terapan.',
+                        ],
+                    ],
+                    [
                         'name' => 'Program Studi S1 Sistem Informasi',
                         'visi' => 'Menjadi program studi yang unggul dalam pengembangan sistem informasi yang berdampak.',
                         'misi' => [
                             'Menyelenggarakan pendidikan berkualitas di bidang sistem informasi.',
                             'Melaksanakan penelitian dan pengabdian relevan kebutuhan masyarakat.',
                             'Membangun kolaborasi industri dan institusi.',
-                        ],
-                    ],
-                    [
-                        'name' => 'Program Studi S1 Teknik Komputer',
-                        'visi' => 'Menjadi rujukan nasional bidang rekayasa perangkat keras dan sistem terbenam.',
-                        'misi' => [
-                            'Menghasilkan lulusan kompeten pada rekayasa perangkat keras.',
-                            'Mendorong inovasi melalui riset terapan.',
                         ],
                     ],
                     [
@@ -116,14 +117,14 @@ class FacultyController extends Controller
         abort_unless(isset($map[$code]), 404);
         $faculty = $map[$code];
 
-        return view('fakultas.program', [
+        return view('mahasiswa.mahasiswa_departemen', [
             'title' => 'Departemen',
             'code' => $code,
             'faculty' => $faculty,
         ]);
     }
 
-    public function programDetail(string $code, string $slug)
+    public function programDetail(Request $request, string $code, string $slug)
     {
         abort_unless($code === 'FTI', 404);
         $slug = strtolower($slug);
@@ -150,14 +151,27 @@ class FacultyController extends Controller
         abort_unless(isset($programs[$slug]), 404);
         $program = $programs[$slug];
 
-        return view('fakultas.program_detail', [
+        // Pengecekan role untuk menentukan view yang sesuai
+        $user = Auth::user();
+        $role = $request->query('role') ?? $user->role ?? 'mahasiswa';
+
+        $viewMap = [
+            'dosen' => 'dosen.dosen_departemen_detail',
+            'reviewer' => 'reviewer.reviewer_departemen_detail',
+            'mahasiswa' => 'mahasiswa.mahasiswa_departemen_detail',
+            'admin' => 'mahasiswa.mahasiswa_departemen_detail',
+        ];
+
+        $viewName = $viewMap[$role] ?? 'mahasiswa.mahasiswa_departemen_detail';
+
+        return view($viewName, [
             'title' => $program['name'],
             'code' => $code,
             'program' => $program,
         ]);
     }
 
-    public function rps(string $code)
+    public function rps(Request $request, string $code)
     {
         $semesters = [
             [
@@ -186,7 +200,20 @@ class FacultyController extends Controller
             ],
         ];
 
-        return view('fakultas.rps', [
+        // Pengecekan role untuk menentukan view yang sesuai
+        $user = Auth::user();
+        $role = $request->query('role') ?? $user->role ?? 'mahasiswa';
+
+        $viewMap = [
+            'dosen' => 'dosen.dosen_rps',
+            'reviewer' => 'reviewer.reviewer_rps',
+            'mahasiswa' => 'mahasiswa.mahasiswa_rps',
+            'admin' => 'mahasiswa.mahasiswa_rps',
+        ];
+
+        $viewName = $viewMap[$role] ?? 'mahasiswa.mahasiswa_rps';
+
+        return view($viewName, [
             'title' => 'S1 Sistem Informasi',
             'code' => $code,
             'semesters' => $semesters,

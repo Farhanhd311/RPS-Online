@@ -10,13 +10,15 @@
 <body class="min-h-screen bg-slate-50">
     <div class="flex min-h-screen">
 		@include('navigation.sidebar')
-        <main class="flex-1 px-6 py-6">
+        <div class="flex-1 flex flex-col">
             <!-- Top bar -->
-            <div class="flex items-center justify-end">
+            <div class="flex items-center justify-end bg-white px-4 py-3">
                 @include('navigation.topbar')
             </div>
-            @yield('content')
-		</main>
+            <main class="flex-1 px-6 py-6">
+                @yield('content')
+            </main>
+		</div>
 	</div>
 </body>
 </html>

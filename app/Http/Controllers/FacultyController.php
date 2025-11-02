@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\MataKuliah;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -173,32 +174,41 @@ class FacultyController extends Controller
 
     public function rps(Request $request, string $code)
     {
-        $semesters = [
-            [
-                'value' => 1,
-                'label' => 'Semester 1',
-                'courses' => [
-                    ['name' => 'Dasar-dasar Sistem Informasi'],
-                    ['name' => 'Pengantar Bisnis dan Manajemen'],
-                ],
-            ],
-            [
-                'value' => 3,
-                'label' => 'Semester 3',
-                'courses' => [
-                    ['name' => 'Analisis dan Perancangan Sistem Informasi'],
-                    ['name' => 'Basis Data'],
-                ],
-            ],
-            [
-                'value' => 5,
-                'label' => 'Semester 5',
-                'courses' => [
-                    ['name' => 'Manajemen Proyek TI'],
-                    ['name' => 'Sistem Enterprise'],
-                ],
-            ],
-        ];
+        // Ambil semua semester yang ada dari database
+        $semesterList = MataKuliah::select('semester')
+            ->distinct()
+            ->whereNotNull('semester')
+            ->orderBy('semester')
+            ->pluck('semester')
+            ->toArray();
+
+        // Jika tidak ada data semester, gunakan default 1-8
+        if (empty($semesterList)) {
+            $semesterList = [1, 2, 3, 4, 5, 6, 7, 8];
+        }
+
+        // Format data semester dengan mata kuliah dari database
+        $semesters = [];
+        foreach ($semesterList as $semester) {
+            $mataKuliah = MataKuliah::where('semester', $semester)
+                ->orderBy('nama_matakuliah')
+                ->get();
+
+            $courses = $mataKuliah->map(function ($mk) {
+                return [
+                    'kode' => $mk->kode_matakuliah ?? $mk->id ?? '',
+                    'name' => $mk->nama_matakuliah ?? '',
+                    'sks' => $mk->sks ?? 0,
+                    'semester' => $mk->semester ?? 0,
+                ];
+            })->toArray();
+
+            $semesters[] = [
+                'value' => $semester,
+                'label' => 'Semester ' . $semester,
+                'courses' => $courses,
+            ];
+        }
 
         // Pengecekan role untuk menentukan view yang sesuai
         $user = Auth::user();

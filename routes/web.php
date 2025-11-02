@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FacultyController;
+use App\Http\Controllers\RpsController;
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.perform');
@@ -22,9 +23,7 @@ Route::middleware('auth')->group(function () {
     })->name('fakultas.struktur');
     
     // Dosen routes
-    Route::get('/dosen/{code}/input-rps', function (string $code) {
-        return view('dosen.dosen_input_rps', ['code' => $code]);
-    })->name('dosen.input_rps');
+    Route::get('/dosen/{code}/input-rps', [RpsController::class, 'showInputForm'])->name('dosen.input_rps');
     
     // Reviewer routes
     Route::get('/reviewer/{code}/review-rps', function (string $code) {

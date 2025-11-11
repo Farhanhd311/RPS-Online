@@ -760,6 +760,214 @@
                 </div>
             </div>
 
+            <!-- Rencana Pembelajaran Semester (RPS) -->
+            <div class="pt-6 border-t border-slate-200">
+                <div class="mb-6 pb-4 border-b border-slate-200">
+                    <h3 class="text-xl font-bold text-slate-800 mb-1">Rencana Pembelajaran Semester (RPS)</h3>
+                    <p class="text-sm text-slate-600">Rencana pembelajaran per minggu dengan detail aktivitas, materi, dan penilaian</p>
+                </div>
+
+                <div class="space-y-6">
+                    <template x-for="(aktivitas, index) in formData.aktivitasPembelajaranList" :key="index">
+                        <div class="bg-slate-50 rounded-xl p-6 border-2 border-slate-200 hover:border-emerald-300 transition-colors">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="font-bold text-lg text-slate-800">
+                                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold mr-2">
+                                        <span x-text="index + 1"></span>
+                                    </span>
+                                    Minggu ke-<span x-text="index + 1"></span>
+                                </h4>
+                                <button type="button" 
+                                    @click="removeAktivitasPembelajaran(index)"
+                                    x-show="formData.aktivitasPembelajaranList.length > 1"
+                                    class="text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors">
+                                    <span class="i-heroicons-trash text-lg"></span>
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-4">
+                                <!-- Minggu ke- -->
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-800 mb-2">
+                                        Minggu ke- <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" 
+                                        :name="'aktivitas_minggu[]'" 
+                                        x-model="aktivitas.minggu_ke"
+                                        placeholder="Contoh: 1-2, 3-4, UTS, UAS"
+                                        required
+                                        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white">
+                                </div>
+
+                                <!-- CPMK -->
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-800 mb-2">
+                                        CPMK <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <select 
+                                            :name="'aktivitas_cpmk[]'" 
+                                            x-model="aktivitas.cpmk_kode"
+                                            required
+                                            class="w-full appearance-none rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white cursor-pointer">
+                                            <option value="">-- Pilih CPMK --</option>
+                                            <template x-for="(cpmk, cpmkIndex) in formData.cpmkList" :key="cpmkIndex">
+                                                <option :value="'CPMK-' + (cpmkIndex + 1)" 
+                                                    x-text="'CPMK-' + (cpmkIndex + 1)"></option>
+                                            </template>
+                                        </select>
+                                        <span class="pointer-events-none i-heroicons-chevron-down-20-solid absolute right-2 top-1/2 -translate-y-1/2 text-emerald-600 text-sm"></span>
+                                    </div>
+                                    <p class="mt-1 text-xs text-slate-500">Pilih CPMK yang telah didefinisikan sebelumnya</p>
+                                </div>
+
+                                <!-- Indikator Penilaian -->
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-800 mb-2">
+                                        Indikator Penilaian
+                                    </label>
+                                    <textarea 
+                                        :name="'aktivitas_indikator_penilaian[]'" 
+                                        x-model="aktivitas.indikator_penilaian"
+                                        rows="2"
+                                        placeholder="Masukkan indikator penilaian..."
+                                        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white resize-none"></textarea>
+                                </div>
+
+                                <!-- Bentuk Penilaian -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-semibold text-slate-800 mb-2">
+                                            Bentuk Penilaian (Jenis)
+                                        </label>
+                                        <input type="text" 
+                                            :name="'aktivitas_bentuk_penilaian_jenis[]'" 
+                                            x-model="aktivitas.bentuk_penilaian_jenis"
+                                            placeholder="Contoh: Quiz, Proposal, UTS, UAS"
+                                            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-slate-800 mb-2">
+                                            Bentuk Penilaian (Bobot %)
+                                        </label>
+                                        <input type="number" 
+                                            :name="'aktivitas_bentuk_penilaian_bobot[]'" 
+                                            x-model="aktivitas.bentuk_penilaian_bobot"
+                                            min="0"
+                                            max="100"
+                                            step="0.01"
+                                            placeholder="0-100"
+                                            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white">
+                                    </div>
+                                </div>
+
+                                <!-- Aktivitas Pembelajaran -->
+                                <div class="bg-white rounded-lg p-4 border border-slate-200">
+                                    <label class="block text-sm font-semibold text-slate-800 mb-3">
+                                        Aktivitas Pembelajaran
+                                    </label>
+                                    
+                                    <!-- Sinkronous -->
+                                    <div class="mb-4">
+                                        <label class="block text-xs font-semibold text-slate-700 mb-2">Sinkronous</label>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            <div>
+                                                <label class="block text-xs font-medium text-slate-600 mb-1">Luring (Offline)</label>
+                                                <textarea 
+                                                    :name="'aktivitas_sinkron_luring[]'" 
+                                                    x-model="aktivitas.aktivitas_sinkron_luring"
+                                                    rows="2"
+                                                    placeholder="Contoh: Kuliah, diskusi, presentasi"
+                                                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white resize-none"></textarea>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-slate-600 mb-1">Daring (Online)</label>
+                                                <textarea 
+                                                    :name="'aktivitas_sinkron_daring[]'" 
+                                                    x-model="aktivitas.aktivitas_sinkron_daring"
+                                                    rows="2"
+                                                    placeholder="Contoh: Video conference, live streaming"
+                                                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white resize-none"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Asinkronous -->
+                                    <div class="mb-4">
+                                        <label class="block text-xs font-semibold text-slate-700 mb-2">Asinkronous</label>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            <div>
+                                                <label class="block text-xs font-medium text-slate-600 mb-1">Mandiri (Independent)</label>
+                                                <textarea 
+                                                    :name="'aktivitas_asinkron_mandiri[]'" 
+                                                    x-model="aktivitas.aktivitas_asinkron_mandiri"
+                                                    rows="2"
+                                                    placeholder="Contoh: Membaca materi, mengerjakan tugas"
+                                                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white resize-none"></textarea>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-slate-600 mb-1">Kolaboratif (Collaborative)</label>
+                                                <textarea 
+                                                    :name="'aktivitas_asinkron_kolaboratif[]'" 
+                                                    x-model="aktivitas.aktivitas_asinkron_kolaboratif"
+                                                    rows="2"
+                                                    placeholder="Contoh: Diskusi kelompok, presentasi kelompok"
+                                                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white resize-none"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Media -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-700 mb-2">Media</label>
+                                        <textarea 
+                                            :name="'aktivitas_media[]'" 
+                                            x-model="aktivitas.media"
+                                            rows="2"
+                                            placeholder="Contoh: Ms. Powerpoint, Ms. Teams, Classroom, Projector, Sparx System"
+                                            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white resize-none"></textarea>
+                                    </div>
+                                </div>
+
+                                <!-- Materi Pembelajaran -->
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-800 mb-2">
+                                        Materi Pembelajaran
+                                    </label>
+                                    <textarea 
+                                        :name="'aktivitas_materi_pembelajaran[]'" 
+                                        x-model="aktivitas.materi_pembelajaran"
+                                        rows="3"
+                                        placeholder="Masukkan materi pembelajaran yang akan dibahas..."
+                                        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white resize-none"></textarea>
+                                </div>
+
+                                <!-- Referensi -->
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-800 mb-2">
+                                        Referensi
+                                    </label>
+                                    <textarea 
+                                        :name="'aktivitas_referensi[]'" 
+                                        x-model="aktivitas.referensi"
+                                        rows="2"
+                                        placeholder="Masukkan referensi yang digunakan (nomor referensi atau deskripsi)..."
+                                        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white resize-none"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <button type="button" 
+                        @click="addAktivitasPembelajaran()"
+                        class="w-full py-3 rounded-xl border-2 border-dashed border-emerald-300 text-emerald-700 font-semibold hover:bg-emerald-50 hover:border-emerald-400 transition-all inline-flex items-center justify-center gap-2">
+                        <span class="i-heroicons-plus-circle text-xl"></span>
+                        Tambah Aktivitas Pembelajaran
+                    </button>
+                    <p class="text-xs text-slate-500 mt-2">Tambahkan aktivitas pembelajaran untuk setiap minggu atau periode (UTS/UAS)</p>
+                </div>
+            </div>
+
             <!-- Action Buttons -->
             <div class="flex items-center justify-end gap-3 pt-6 border-t border-slate-200">
                 <a href="{{ route('fakultas.rps', ['code'=>$code]) }}?role={{ $userRole }}" 
@@ -834,6 +1042,22 @@ function inputRpsPage(allMataKuliah, semesters, dosenPengembang, dosenPengembang
             ],
             mkPrasyaratList: [
                 { nama: '' }
+            ],
+            aktivitasPembelajaranList: [
+                {
+                    minggu_ke: '',
+                    cpmk_kode: '',
+                    indikator_penilaian: '',
+                    bentuk_penilaian_jenis: '',
+                    bentuk_penilaian_bobot: '',
+                    aktivitas_sinkron_luring: '',
+                    aktivitas_sinkron_daring: '',
+                    aktivitas_asinkron_mandiri: '',
+                    aktivitas_asinkron_kolaboratif: '',
+                    media: '',
+                    materi_pembelajaran: '',
+                    referensi: ''
+                }
             ]
         },
         get filteredMataKuliahList() {
@@ -992,6 +1216,27 @@ function inputRpsPage(allMataKuliah, semesters, dosenPengembang, dosenPengembang
         removeMkPrasyarat(index) {
             if (this.formData.mkPrasyaratList.length > 1) {
                 this.formData.mkPrasyaratList.splice(index, 1);
+            }
+        },
+        addAktivitasPembelajaran() {
+            this.formData.aktivitasPembelajaranList.push({
+                minggu_ke: '',
+                cpmk_kode: '',
+                indikator_penilaian: '',
+                bentuk_penilaian_jenis: '',
+                bentuk_penilaian_bobot: '',
+                aktivitas_sinkron_luring: '',
+                aktivitas_sinkron_daring: '',
+                aktivitas_asinkron_mandiri: '',
+                aktivitas_asinkron_kolaboratif: '',
+                media: '',
+                materi_pembelajaran: '',
+                referensi: ''
+            });
+        },
+        removeAktivitasPembelajaran(index) {
+            if (this.formData.aktivitasPembelajaranList.length > 1) {
+                this.formData.aktivitasPembelajaranList.splice(index, 1);
             }
         },
         init() {

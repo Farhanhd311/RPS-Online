@@ -37,14 +37,23 @@
 							<p class="text-slate-800 font-medium text-base" x-text="c.name"></p>
 						</div>
 						<div class="flex items-center gap-4 ml-6">
-							<a href="#" @click.prevent="view(c)" class="inline-flex items-center gap-2 text-sm text-emerald-700 hover:text-emerald-800 font-medium transition-colors">
-								<span class="i-heroicons-eye text-lg"></span>
-								<span>Lihat</span>
-							</a>
-							<a href="#" @click.prevent="download(c)" class="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-700 font-medium transition-colors">
-								<span class="i-heroicons-arrow-down-tray text-lg"></span>
-								<span>Unduh</span>
-							</a>
+							<template x-if="c.has_rps && c.rps_id">
+								<div class="flex items-center gap-4">
+									<a :href="`/mahasiswa/{{ $code }}/rps/${c.rps_id}/view`" target="_blank" class="inline-flex items-center gap-2 text-sm text-emerald-700 hover:text-emerald-800 font-medium transition-colors">
+										<span class="i-heroicons-eye text-lg"></span>
+										<span>Lihat PDF</span>
+									</a>
+									<a :href="`/mahasiswa/{{ $code }}/rps/${c.rps_id}/download`" class="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-700 font-medium transition-colors">
+										<span class="i-heroicons-arrow-down-tray text-lg"></span>
+										<span>Unduh PDF</span>
+									</a>
+								</div>
+							</template>
+							<template x-if="!c.has_rps">
+								<div class="text-sm text-slate-400 italic">
+									RPS belum tersedia
+								</div>
+							</template>
 						</div>
 					</div>
 				</div>
@@ -56,35 +65,6 @@
 		</div>
 	</div>
 
-	<!-- Modal preview sederhana -->
-	<div x-show="preview" x-transition.opacity class="fixed inset-0 bg-black/40 grid place-items-center z-40 p-4">
-		<div class="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto" @click.outside="preview=null">
-			<div class="flex items-start justify-between mb-4">
-				<div class="flex-1">
-					<div class="flex items-center gap-3 mb-2">
-						<span x-show="preview?.kode" class="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full" x-text="preview?.kode"></span>
-						<span class="text-xs text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full">
-							<span x-text="preview?.sks || 0"></span> SKS
-						</span>
-						<span class="text-xs text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full">
-							Semester <span x-text="preview?.semester || '-'"></span>
-						</span>
-					</div>
-					<p class="text-lg font-semibold text-slate-800" x-text="preview?.name"></p>
-				</div>
-				<button @click="preview=null" class="ml-4 text-slate-400 hover:text-slate-600 transition-colors">
-					<span class="i-heroicons-x-mark text-xl"></span>
-				</button>
-			</div>
-			<div class="border-t border-slate-200 pt-4">
-				<p class="text-sm text-slate-600">Pratinjau RPS (mock). Tempatkan embed PDF atau konten di sini.</p>
-			</div>
-			<div class="mt-6 flex justify-end gap-3">
-				<button class="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors" @click="preview=null">Tutup</button>
-				<button class="px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors">Buka Detail</button>
-			</div>
-		</div>
-	</div>
 </div>
 
 <script>
@@ -93,13 +73,10 @@ function rpsPage(semesters) {
 		all: semesters,
 		selected: semesters[0]?.value ?? 1,
 		courses: semesters[0]?.courses ?? [],
-		preview: null,
 		apply() {
 			const s = this.all.find(s => s.value === this.selected);
 			this.courses = s ? s.courses : [];
-		},
-		view(course) { this.preview = course; },
-		download(course) { alert('Unduh: ' + course.name); },
+		}
 	};
 }
 </script>

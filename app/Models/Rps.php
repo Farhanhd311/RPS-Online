@@ -44,6 +44,7 @@ class Rps extends Model
         'approved_by',
         'submitted_at',
         'approved_at',
+        'reviewer_notes',
     ];
 
     protected $casts = [

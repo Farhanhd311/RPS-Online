@@ -8,6 +8,7 @@ use App\Models\RpsAktivitasPembelajaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class RpsController extends Controller
@@ -205,7 +206,8 @@ class RpsController extends Controller
                 'perangkat_keras' => $request->perangkat_keras ?? [],
                 'dosen_pengampu' => $request->dosen_pengampu ?? [],
                 'mk_prasyarat' => $mkPrasyaratData,
-                'status' => 'draft',
+                'status' => 'submitted',
+                'submitted_at' => now(),
                 'template_content' => '',
             ]);
 
@@ -239,7 +241,7 @@ class RpsController extends Controller
             $filepath = 'rps/' . $filename;
             
             // Simpan PDF ke storage/app/public/rps
-            \Storage::disk('public')->put($filepath, $pdf->output());
+            Storage::disk('public')->put($filepath, $pdf->output());
             
             // Update path PDF di database
             $rps->update(['pdf_path' => $filepath]);
@@ -270,7 +272,7 @@ class RpsController extends Controller
         $rps = Rps::findOrFail($rps_id);
         
         // Cek apakah PDF sudah ada di storage
-        if ($rps->pdf_path && \Storage::disk('public')->exists($rps->pdf_path)) {
+        if ($rps->pdf_path && Storage::disk('public')->exists($rps->pdf_path)) {
             $filepath = storage_path('app/public/' . $rps->pdf_path);
             return response()->file($filepath);
         }
@@ -291,7 +293,54 @@ class RpsController extends Controller
         $rps = Rps::findOrFail($rps_id);
         
         // Cek apakah PDF sudah ada di storage
-        if ($rps->pdf_path && \Storage::disk('public')->exists($rps->pdf_path)) {
+        if ($rps->pdf_path && Storage::disk('public')->exists($rps->pdf_path)) {
+            $filepath = storage_path('app/public/' . $rps->pdf_path);
+            return response()->download($filepath, 'RPS_' . $rps->kode_matakuliah . '.pdf');
+        }
+        
+        // Jika belum ada, generate ulang
+        $rps->load('aktivitasPembelajaran');
+        $pdf = Pdf::loadView('pdf.rps_template', ['rps' => $rps]);
+        $pdf->setPaper('A4', 'portrait');
+        
+        $filename = 'RPS_' . $rps->kode_matakuliah . '_' . date('Y-m-d') . '.pdf';
+        return $pdf->download($filename);
+    }
+
+    /**
+     * View RPS PDF in browser for students (only approved RPS)
+     */
+    public function viewPdfStudent(string $code, int $rps_id)
+    {
+        $rps = Rps::where('rps_id', $rps_id)
+                   ->where('status', 'approved')
+                   ->firstOrFail();
+        
+        // Cek apakah PDF sudah ada di storage
+        if ($rps->pdf_path && Storage::disk('public')->exists($rps->pdf_path)) {
+            $filepath = storage_path('app/public/' . $rps->pdf_path);
+            return response()->file($filepath);
+        }
+        
+        // Jika belum ada, generate ulang
+        $rps->load('aktivitasPembelajaran');
+        $pdf = Pdf::loadView('pdf.rps_template', ['rps' => $rps]);
+        $pdf->setPaper('A4', 'portrait');
+        
+        return $pdf->stream('RPS_' . $rps->kode_matakuliah . '.pdf');
+    }
+
+    /**
+     * Download RPS sebagai PDF for students (only approved RPS)
+     */
+    public function downloadPdfStudent(string $code, int $rps_id)
+    {
+        $rps = Rps::where('rps_id', $rps_id)
+                   ->where('status', 'approved')
+                   ->firstOrFail();
+        
+        // Cek apakah PDF sudah ada di storage
+        if ($rps->pdf_path && Storage::disk('public')->exists($rps->pdf_path)) {
             $filepath = storage_path('app/public/' . $rps->pdf_path);
             return response()->download($filepath, 'RPS_' . $rps->kode_matakuliah . '.pdf');
         }

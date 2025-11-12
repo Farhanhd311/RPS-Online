@@ -195,11 +195,19 @@ class FacultyController extends Controller
                 ->orderBy('nama_matakuliah')
                 ->get();
 
-            $courses = $mataKuliah->map(function ($mk) {
+            $courses = $mataKuliah->map(function ($mk) use ($request) {
                 // Cari RPS yang sudah dibuat untuk mata kuliah ini
-                $rps = Rps::where('kode_matakuliah', $mk->kode_matakuliah)
-                    ->orderBy('created_at', 'desc')
-                    ->first();
+                $rpsQuery = Rps::where('kode_matakuliah', $mk->kode_matakuliah)
+                    ->orderBy('created_at', 'desc');
+                
+                // Jika role mahasiswa, hanya tampilkan RPS yang sudah approved
+                $user = Auth::user();
+                $role = $request->query('role') ?? $user->role ?? 'mahasiswa';
+                if ($role === 'mahasiswa') {
+                    $rpsQuery->where('status', 'approved');
+                }
+                
+                $rps = $rpsQuery->first();
                 
                 return [
                     'kode' => $mk->kode_matakuliah ?? $mk->id ?? '',
@@ -209,6 +217,7 @@ class FacultyController extends Controller
                     'rps' => $rps, // Include RPS data
                     'has_rps' => $rps !== null,
                     'rps_id' => $rps ? $rps->rps_id : null,
+                    'rps_status' => $rps ? $rps->status : null,
                 ];
             })->toArray();
 

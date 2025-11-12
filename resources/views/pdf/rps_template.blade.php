@@ -57,6 +57,19 @@
         .logo-cell {
             width: 80px;
             text-align: center;
+            vertical-align: middle;
+        }
+        
+        .logo-img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+        }
+        
+        .header-cell {
+            text-align: center;
+            vertical-align: middle;
+            padding: 8px;
         }
         
         .section-title {
@@ -99,28 +112,50 @@
     <!-- Header -->
     <table>
         <tr>
-            <td rowspan="4" class="logo-cell">
-                <!-- Logo placeholder -->
-                <div style="width: 60px; height: 60px; margin: auto;"></div>
+            <td rowspan="5" style="width: 80px; text-align: center; vertical-align: middle; border: 1px solid #000;">
+                <!-- Logo Universitas Andalas -->
+                <div style="width: 60px; height: 60px; margin: auto; background-color: #2d5016; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative;">
+                    <!-- Pohon Beringin -->
+                    <div style="position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 40px; height: 40px;">
+                        <!-- Batang pohon -->
+                        <div style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 4px; height: 15px; background-color: #8B4513;"></div>
+                        <!-- Daun pohon -->
+                        <div style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); width: 35px; height: 25px; background-color: #228B22; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; opacity: 0.9;"></div>
+                        <!-- Daun tambahan -->
+                        <div style="position: absolute; bottom: 15px; left: 45%; transform: translateX(-50%); width: 20px; height: 15px; background-color: #32CD32; border-radius: 50%; opacity: 0.8;"></div>
+                        <div style="position: absolute; bottom: 15px; right: 45%; transform: translateX(50%); width: 20px; height: 15px; background-color: #32CD32; border-radius: 50%; opacity: 0.8;"></div>
+                    </div>
+                    <!-- Text UNAND -->
+                    <div style="position: absolute; bottom: 2px; color: white; font-weight: bold; font-size: 6pt; text-align: center; line-height: 0.8;">
+                        UNAND
+                    </div>
+                </div>
             </td>
-            <td colspan="3" class="text-center bold">UNIVERSITAS ANDALAS</td>
+            <td style="text-align: center; font-weight: bold; font-size: 14pt; padding: 3px; border: 1px solid #000; line-height: 1.1;">UNIVERSITAS ANDALAS</td>
         </tr>
         <tr>
-            <td colspan="3" class="text-center bold">FAKULTAS TEKNOLOGI INFORMASI</td>
+            <td style="text-align: center; font-weight: bold; font-size: 12pt; padding: 3px; border: 1px solid #000; line-height: 1.0;">FAKULTAS TEKNOLOGI INFORMASI</td>
         </tr>
         <tr>
-            <td colspan="3" class="text-center bold">DEPARTEMEN SISTEM INFORMASI</td>
+            <td style="text-align: center; font-weight: bold; font-size: 12pt; padding: 3px; border: 1px solid #000; line-height: 1.0;">DEPARTEMEN SISTEM INFORMASI</td>
         </tr>
         <tr>
-            <td colspan="3" class="text-center bold">RENCANA PEMBELAJARAN SEMESTER</td>
+            <td style="text-align: center; font-weight: bold; font-size: 13pt; padding: 3px; background-color: #f0e8d0; border: 1px solid #000; line-height: 1.0;">RENCANA PEMBELAJARAN SEMESTER</td>
         </tr>
         <tr>
-            <td class="bold gray-bg" style="width: 20%;">MATA KULIAH<br>(MK)</td>
-            <td class="bold" style="width: 15%;">KODE</td>
-            <td class="bold" style="width: 35%;">BAHAN KAJIAN<br>(BK)</td>
-            <td class="bold" style="width: 15%;">BOBOT (SKS)</td>
-            <td class="bold" style="width: 15%;">SEMESTER</td>
-            <td class="bold" style="width: 20%;">TANGGAL PENYUSUNAN</td>
+            <td style="border: 1px solid #000; padding: 2px;"></td>
+        </tr>
+    </table>
+
+    <!-- Info Mata Kuliah -->
+    <table>
+        <tr>
+            <td class="bold gray-bg text-center" style="width: 80px;">MATA KULIAH</td>
+            <td class="bold gray-bg text-center" style="width: 10%;">KODE</td>
+            <td class="bold gray-bg text-center" style="width: 25%;">BAHAN KAJIAN</td>
+            <td class="bold gray-bg text-center" style="width: 15%;">BOBOT (SKS)</td>
+            <td class="bold gray-bg text-center" style="width: 10%;">SEMESTER</td>
+            <td class="bold gray-bg text-center" style="width: 25%;">TANGGAL PENYUSUNAN</td>
         </tr>
         <tr>
             <td class="text-center">{{ $rps->nama_matakuliah }}</td>
@@ -156,23 +191,68 @@
             <td class="bold gray-bg" style="width: 30%;">CPL-PRODI yang dibebankan pada MK</td>
             <td>
                 @if($rps->cpl_prodi && is_array($rps->cpl_prodi))
-                    @foreach($rps->cpl_prodi as $cpl)
-                        <div>{{ $cpl }}</div>
+                    @foreach($rps->cpl_prodi as $index => $cpl)
+                        <div style="margin-bottom: 8px;">
+                            <strong>CPL-{{ $index + 1 }}:</strong> {{ $cpl }}
+                            @php
+                                // Deskripsi CPL berdasarkan kode
+                                $cplDescriptions = [
+                                    'CPL-1' => 'Mampu menerapkan pemikiran logis, kritis, sistematis, dan inovatif dalam konteks pengembangan atau implementasi ilmu pengetahuan dan teknologi yang memperhatikan dan menerapkan nilai humaniora.',
+                                    'CPL-2' => 'Mampu menunjukkan kinerja mandiri, bermutu, dan terukur dalam bidang sistem informasi.',
+                                    'CPL-3' => 'Mampu mengkaji implikasi pengembangan atau implementasi ilmu pengetahuan teknologi yang memperhatikan dan menerapkan nilai humaniora sesuai dengan keahliannya.',
+                                    'CPL-4' => 'Mampu menyusun deskripsi saintifik hasil kajian tersebut di atas dalam bentuk skripsi atau laporan tugas akhir, dan mengunggahnya dalam laman perguruan tinggi.',
+                                    'CPL-5' => 'Mampu mengambil keputusan secara tepat dalam konteks penyelesaian masalah di bidang keahliannya, berdasarkan hasil analisis informasi dan data.',
+                                    'CPL-6' => 'Mampu memelihara dan mengembangkan jaringan kerja dengan pembimbing, kolega, sejawat baik di dalam maupun di luar lembaganya.',
+                                    'CPL-7' => 'Mampu bertanggungjawab atas pencapaian hasil kerja kelompok dan melakukan supervisi serta evaluasi terhadap penyelesaian pekerjaan yang ditugaskan kepada pekerja yang berada di bawah tanggungjawabnya.',
+                                    'CPL-8' => 'Mampu melakukan proses evaluasi diri terhadap kelompok kerja yang berada dibawah tanggung jawabnya, dan mampu mengelola pembelajaran secara mandiri.',
+                                    'CPL-9' => 'Mampu mendokumentasikan, menyimpan, mengamankan, dan menemukan kembali data untuk menjamin kesahihan dan mencegah plagiasi.'
+                                ];
+                                $cplKey = 'CPL-' . ($index + 1);
+                                $description = $cplDescriptions[$cplKey] ?? '';
+                            @endphp
+                            @if($description)
+                                <div style="font-size: 9pt; color: #555; margin-top: 3px; font-style: italic;">
+                                    {{ $description }}
+                                </div>
+                            @endif
+                        </div>
                     @endforeach
                 @endif
             </td>
         </tr>
         <tr>
-            <td colspan="2" class="bold">Indikator (IK)</td>
+            <td class="bold gray-bg" style="width: 30%;">Indikator (IK)</td>
+            <td>
+                @if($rps->indikator && is_array($rps->indikator))
+                    @foreach($rps->indikator as $index => $ik)
+                        <div style="margin-bottom: 8px;">
+                            <strong>IK-{{ $index + 1 }}:</strong> {{ $ik }}
+                            @php
+                                // Deskripsi IK berdasarkan kode
+                                $ikDescriptions = [
+                                    'IK-1' => 'Mampu mengidentifikasi, menganalisis, dan merumuskan masalah dalam domain sistem informasi.',
+                                    'IK-2' => 'Mampu merancang solusi sistem informasi yang efektif dan efisien.',
+                                    'IK-3' => 'Mampu mengimplementasikan sistem informasi menggunakan teknologi yang tepat.',
+                                    'IK-4' => 'Mampu mengevaluasi dan memelihara sistem informasi yang telah dibangun.',
+                                    'IK-5' => 'Mampu berkomunikasi secara efektif dalam tim pengembangan sistem informasi.',
+                                    'IK-6' => 'Mampu menerapkan etika profesi dalam pengembangan sistem informasi.',
+                                    'IK-7' => 'Mampu beradaptasi dengan perkembangan teknologi informasi terkini.',
+                                    'IK-8' => 'Mampu mengelola proyek sistem informasi dengan baik.',
+                                    'IK-9' => 'Mampu melakukan penelitian dalam bidang sistem informasi.'
+                                ];
+                                $ikKey = 'IK-' . ($index + 1);
+                                $description = $ikDescriptions[$ikKey] ?? '';
+                            @endphp
+                            @if($description)
+                                <div style="font-size: 9pt; color: #555; margin-top: 3px; font-style: italic;">
+                                    {{ $description }}
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
+                @endif
+            </td>
         </tr>
-        @if($rps->indikator && is_array($rps->indikator))
-            @foreach($rps->indikator as $ik)
-                <tr>
-                    <td class="text-center">{{ $ik }}</td>
-                    <td>{{ $ik }}</td>
-                </tr>
-            @endforeach
-        @endif
         <tr>
             <td colspan="2" class="bold">Kemampuan akhir tiap tahapan belajar (CPMK)</td>
         </tr>

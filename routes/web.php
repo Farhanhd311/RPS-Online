@@ -24,6 +24,9 @@ Route::middleware('auth')->group(function () {
     
     // Dosen routes
     Route::get('/dosen/{code}/input-rps', [RpsController::class, 'showInputForm'])->name('dosen.input_rps');
+    Route::post('/dosen/{code}/input-rps', [RpsController::class, 'store'])->name('rps.store');
+    Route::get('/dosen/{code}/rps/{rps_id}/view', [RpsController::class, 'viewPdf'])->name('rps.view');
+    Route::get('/dosen/{code}/rps/{rps_id}/download', [RpsController::class, 'downloadPdf'])->name('rps.download');
     
     // Reviewer routes
     Route::get('/reviewer/{code}/review-rps', function (string $code) {

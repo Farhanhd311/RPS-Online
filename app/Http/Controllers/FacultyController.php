@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MataKuliah;
+use App\Models\Rps;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -195,11 +196,19 @@ class FacultyController extends Controller
                 ->get();
 
             $courses = $mataKuliah->map(function ($mk) {
+                // Cari RPS yang sudah dibuat untuk mata kuliah ini
+                $rps = Rps::where('kode_matakuliah', $mk->kode_matakuliah)
+                    ->orderBy('created_at', 'desc')
+                    ->first();
+                
                 return [
                     'kode' => $mk->kode_matakuliah ?? $mk->id ?? '',
                     'name' => $mk->nama_matakuliah ?? '',
                     'sks' => $mk->sks ?? 0,
                     'semester' => $mk->semester ?? 0,
+                    'rps' => $rps, // Include RPS data
+                    'has_rps' => $rps !== null,
+                    'rps_id' => $rps ? $rps->rps_id : null,
                 ];
             })->toArray();
 

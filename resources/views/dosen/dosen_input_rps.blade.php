@@ -75,9 +75,47 @@
 
     <!-- Form RPS -->
     <div class="bg-white rounded-2xl p-8 shadow-lg ring-1 ring-slate-200" x-show="selectedMataKuliah">
-        <form method="POST" action="#" @submit.prevent="submitForm()" class="space-y-6">
+        <!-- Error Messages -->
+        @if ($errors->any())
+            <div class="mb-6 bg-red-50 border border-red-200 rounded-xl p-4">
+                <div class="flex items-start gap-3">
+                    <span class="i-heroicons-exclamation-circle text-red-600 text-xl mt-0.5"></span>
+                    <div class="flex-1">
+                        <h4 class="font-semibold text-red-800 mb-2">Terjadi Kesalahan:</h4>
+                        <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="mb-6 bg-red-50 border border-red-200 rounded-xl p-4">
+                <div class="flex items-start gap-3">
+                    <span class="i-heroicons-exclamation-circle text-red-600 text-xl mt-0.5"></span>
+                    <div class="flex-1">
+                        <h4 class="font-semibold text-red-800">{{ session('error') }}</h4>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('rps.store', ['code' => $code]) }}" class="space-y-6" 
+              x-on:submit="
+                  console.log('Submitting - SKS:', formData.sks_numeric, 'type:', typeof formData.sks_numeric);
+                  console.log('Submitting - Semester:', formData.semester, 'type:', typeof formData.semester);
+              ">
             @csrf
             <input type="hidden" name="kode_matakuliah" x-model="formData.kode_matakuliah" required>
+            <input type="hidden" name="nama_matakuliah" x-model="formData.nama_matakuliah">
+            <input type="hidden" name="dosen_pengembang" :value="dosenPengembang">
+            <input type="hidden" name="dosen_pengembang_id" :value="dosenPengembangId">
+            <input type="hidden" name="semester" :value="Number(formData.semester) || 0">
+            <input type="hidden" name="sks" :value="Number(formData.sks_numeric) || 0">
+            <input type="hidden" name="tanggal_penyusunan" x-model="formData.tanggal_penyusunan">
 
             <!-- Form Detail Mata Kuliah -->
             <div class="space-y-6">
@@ -146,8 +184,8 @@
                             <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold mr-2">6</span>
                             Tanggal Penyusunan
                         </label>
-                        <input type="text" name="tanggal_penyusunan" 
-                            x-model="formData.tanggal_penyusunan"
+                        <input type="text"
+                            x-model="formData.tanggal_penyusunan_display"
                             readonly
                             class="w-full rounded-xl border border-slate-300 pl-4 pr-4 py-3 text-slate-800 bg-slate-50 shadow-sm cursor-not-allowed font-medium"
                         />
@@ -182,12 +220,11 @@
                             <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold mr-2">1</span>
                             Dosen Pengembang RPS
                         </label>
-                        <input type="text" name="dosen_pengembang" 
+                        <input type="text"
                             :value="dosenPengembang"
                             readonly
                             class="w-full rounded-xl border border-slate-300 pl-4 pr-4 py-3 text-slate-800 bg-slate-50 shadow-sm cursor-not-allowed font-medium"
                         />
-                        <input type="hidden" name="dosen_pengembang_id" :value="dosenPengembangId">
                     </div>
 
                     <!-- Koordinasi BK -->
@@ -975,6 +1012,7 @@
                     Batal
                 </a>
                 <button type="submit" 
+                    @click="console.log('Form submitted', formData)"
                     class="px-8 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 text-white font-semibold shadow-lg hover:shadow-xl hover:from-emerald-700 hover:to-emerald-800 transition-all inline-flex items-center gap-2">
                     <span class="i-heroicons-check text-lg"></span>
                     Simpan RPS
@@ -1001,14 +1039,16 @@ function inputRpsPage(allMataKuliah, semesters, dosenPengembang, dosenPengembang
         ikDescriptions: ikDescriptions || {},
         asesmenModels: asesmenModels || [],
         formData: {
-            semester: '',
+            semester: 0,
             kode_matakuliah: '',
             nama_matakuliah: '',
             kode: '',
             bahan_kajian: '',
             sks: '',
+            sks_numeric: 0,
             semester_display: '',
             tanggal_penyusunan: '',
+            tanggal_penyusunan_display: '',
             koordinasi_bk: '',
             selectedCpl: [],
             selectedIk: [],
@@ -1113,30 +1153,46 @@ function inputRpsPage(allMataKuliah, semesters, dosenPengembang, dosenPengembang
                 // 3. Bahan Kajian (BK) - kosongkan saja
                 this.formData.bahan_kajian = '';
                 
-                // 4. Bobot (SKS)
+                // 4. Bobot (SKS) - for display and numeric
+                this.formData.sks_numeric = parseInt(mk.sks, 10) || 0;
                 this.formData.sks = (mk.sks || 0) + ' SKS';
+                console.log('Populated SKS:', this.formData.sks_numeric, 'type:', typeof this.formData.sks_numeric);
                 
-                // 5. Semester
+                // 5. Semester - for display and numeric
+                this.formData.semester = parseInt(mk.semester, 10) || 0;
                 this.formData.semester_display = 'Semester ' + (mk.semester || '-');
+                console.log('Populated Semester:', this.formData.semester, 'type:', typeof this.formData.semester);
                 
                 // 6. Tanggal Penyusunan (real time)
                 const now = new Date();
-                const options = { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                };
-                this.formData.tanggal_penyusunan = now.toLocaleDateString('id-ID', options);
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                
+                // Format MySQL untuk database (Y-m-d H:i:s)
+                this.formData.tanggal_penyusunan = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+                
+                // Format Indonesia untuk display
+                const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
+                                   'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                this.formData.tanggal_penyusunan_display = `${day} ${monthNames[now.getMonth()]} ${year} pukul ${hours}:${minutes}`;
+                
+                console.log('Tanggal MySQL:', this.formData.tanggal_penyusunan);
+                console.log('Tanggal Display:', this.formData.tanggal_penyusunan_display);
             } else {
                 // Reset semua field jika tidak ada mata kuliah yang dipilih
                 this.formData.nama_matakuliah = '';
                 this.formData.kode = '';
                 this.formData.bahan_kajian = '';
                 this.formData.sks = '';
+                this.formData.sks_numeric = 0;
+                this.formData.semester = 0;
                 this.formData.semester_display = '';
                 this.formData.tanggal_penyusunan = '';
+                this.formData.tanggal_penyusunan_display = '';
             }
         },
         get totalBobot() {

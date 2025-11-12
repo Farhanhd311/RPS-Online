@@ -9,6 +9,18 @@
         </a>
         <h1 class="text-3xl font-extrabold text-emerald-700">S1 Sistem Informasi</h1>
     </div>
+
+    <!-- Success Message -->
+    @if (session('success'))
+        <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+            <div class="flex items-start gap-3">
+                <span class="i-heroicons-check-circle text-emerald-600 text-xl mt-0.5"></span>
+                <div class="flex-1">
+                    <h4 class="font-semibold text-emerald-800">{{ session('success') }}</h4>
+                </div>
+            </div>
+        </div>
+    @endif
 	<div class="bg-white rounded-xl p-6 shadow-sm ring-1 ring-slate-100">
 		<p class="font-semibold text-slate-800">Pilih Semester</p>
 		<div class="mt-3 flex items-center gap-3">
@@ -37,18 +49,27 @@
 							<p class="text-slate-800 font-medium text-base" x-text="c.name"></p>
 						</div>
 						<div class="flex items-center gap-4 ml-6">
-							<a href="#" @click.prevent="view(c)" class="inline-flex items-center gap-2 text-sm text-emerald-700 hover:text-emerald-800 font-medium transition-colors">
-								<span class="i-heroicons-eye text-lg"></span>
-								<span>Lihat</span>
-							</a>
+							<!-- Lihat - only show if RPS exists -->
+							<template x-if="c.has_rps">
+								<a href="#" @click.prevent="view(c)" class="inline-flex items-center gap-2 text-sm text-emerald-700 hover:text-emerald-800 font-medium transition-colors">
+									<span class="i-heroicons-eye text-lg"></span>
+									<span>Lihat</span>
+								</a>
+							</template>
+							
+							<!-- Input - always show -->
 							<a :href="`{{ route('dosen.input_rps', ['code'=>$code]) }}?kode=${c.kode || ''}&semester=${c.semester || ''}`" class="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
 								<span class="i-heroicons-pencil text-lg"></span>
-								<span>Input</span>
+								<span x-text="c.has_rps ? 'Edit' : 'Input'"></span>
 							</a>
-							<a href="#" @click.prevent="download(c)" class="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-700 font-medium transition-colors">
-								<span class="i-heroicons-arrow-down-tray text-lg"></span>
-								<span>Unduh</span>
-							</a>
+							
+							<!-- Unduh - only show if RPS exists -->
+							<template x-if="c.has_rps">
+								<a href="#" @click.prevent="download(c)" class="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-700 font-medium transition-colors">
+									<span class="i-heroicons-arrow-down-tray text-lg"></span>
+									<span>Unduh</span>
+								</a>
+							</template>
 						</div>
 					</div>
 				</div>
@@ -102,8 +123,24 @@ function rpsPage(semesters) {
 			const s = this.all.find(s => s.value === this.selected);
 			this.courses = s ? s.courses : [];
 		},
-		view(course) { this.preview = course; },
-		download(course) { alert('Unduh: ' + course.name); },
+		view(course) { 
+			if (!course.has_rps || !course.rps_id) {
+				alert('RPS belum dibuat untuk mata kuliah ini.');
+				return;
+			}
+			// Open PDF in new tab
+			const url = `{{ route('rps.view', ['code' => $code, 'rps_id' => '__RPS_ID__']) }}`.replace('__RPS_ID__', course.rps_id);
+			window.open(url, '_blank');
+		},
+		download(course) { 
+			if (!course.has_rps || !course.rps_id) {
+				alert('RPS belum dibuat untuk mata kuliah ini.');
+				return;
+			}
+			// Download PDF
+			const url = `{{ route('rps.download', ['code' => $code, 'rps_id' => '__RPS_ID__']) }}`.replace('__RPS_ID__', course.rps_id);
+			window.location.href = url;
+		},
 	};
 }
 </script>

@@ -6,6 +6,7 @@ use App\Http\Controllers\FacultyController;
 use App\Http\Controllers\RpsController;
 use App\Http\Controllers\ReviewerController;
 use App\Http\Controllers\MataKuliahController;
+use App\Http\Controllers\RpsSuggestionController;
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.perform');
@@ -45,4 +46,10 @@ Route::middleware('auth')->group(function () {
     // Student routes for RPS PDF
     Route::get('/mahasiswa/{code}/rps/{rps_id}/view', [RpsController::class, 'viewPdfStudent'])->name('rps.view.student');
     Route::get('/mahasiswa/{code}/rps/{rps_id}/download', [RpsController::class, 'downloadPdfStudent'])->name('rps.download.student');
+    
+    // API routes for RPS Suggestions
+    Route::get('/api/rps/{rps_id}/suggestions', [RpsSuggestionController::class, 'getSuggestions']);
+    Route::post('/api/rps/{rps_id}/suggestions', [RpsSuggestionController::class, 'storeSuggestion']);
+    Route::get('/api/suggestions/dashboard', [RpsSuggestionController::class, 'getDashboardSuggestions']);
+    Route::put('/api/suggestions/{suggestion_id}/status', [RpsSuggestionController::class, 'updateStatus']);
 });

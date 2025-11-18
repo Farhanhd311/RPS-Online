@@ -45,6 +45,10 @@
 								<span class="i-heroicons-clipboard-document-check text-lg"></span>
 								<span>Review</span>
 							</a>
+							<button @click="openComments(c.rps_id, c.name)" class="inline-flex items-center gap-2 text-sm text-purple-600 hover:text-purple-700 font-medium transition-colors">
+								<span class="i-heroicons-chat-bubble-left-right text-lg"></span>
+								<span>Komentar</span>
+							</button>
 							<a href="#" @click.prevent="download(c)" class="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-700 font-medium transition-colors">
 								<span class="i-heroicons-arrow-down-tray text-lg"></span>
 								<span>Unduh</span>
@@ -89,6 +93,56 @@
 			</div>
 		</div>
 	</div>
+
+	<!-- Modal Komentar -->
+	<div x-show="commentsOpen" @click.self="closeComments()" x-transition class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display: none;">
+		<div @click.stop class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
+			<!-- Modal Header -->
+			<div class="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-5 flex items-center justify-between">
+				<div class="flex-1">
+					<h2 class="text-2xl font-bold text-white">Komentar Mahasiswa</h2>
+					<p class="text-purple-100 text-sm mt-1" x-text="commentsMataKuliah"></p>
+				</div>
+				<button @click="closeComments()" class="text-white hover:bg-purple-500 p-2 rounded-lg transition-colors ml-4 flex-shrink-0">
+					<span class="i-heroicons-x-mark text-2xl"></span>
+				</button>
+			</div>
+
+			<!-- Modal Body -->
+			<div class="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50">
+				<template x-for="comment in comments" :key="comment.suggestion_id">
+					<div class="bg-white rounded-xl p-4 border border-slate-200 hover:border-purple-300 hover:shadow-md transition-all">
+						<div class="flex items-start justify-between mb-3">
+							<div class="flex-1">
+								<div class="flex items-center gap-2 mb-1">
+									<p class="font-semibold text-slate-800" x-text="comment.username"></p>
+									<span class="text-xs px-2.5 py-1 rounded-full font-medium" :class="comment.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : comment.status === 'reviewed' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'" x-text="comment.status"></span>
+								</div>
+								<p class="text-xs text-slate-500" x-text="formatDate(comment.created_at)"></p>
+							</div>
+						</div>
+						<p class="text-slate-700 text-sm leading-relaxed" x-text="comment.saran"></p>
+					</div>
+				</template>
+
+				<div x-show="!comments.length" class="text-center py-12">
+					<div class="text-slate-400 mb-2">
+						<span class="i-heroicons-chat-bubble-left-right text-5xl block mb-3"></span>
+					</div>
+					<p class="text-slate-600 font-medium">Belum ada komentar</p>
+					<p class="text-slate-500 text-sm">Mahasiswa belum memberikan masukan untuk RPS ini</p>
+				</div>
+			</div>
+
+			<!-- Modal Footer -->
+			<div class="border-t border-slate-200 p-6 bg-white">
+				<button @click="closeComments()" class="w-full px-5 py-2.5 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition-colors inline-flex items-center justify-center gap-2">
+					<span class="i-heroicons-arrow-left text-lg"></span>
+					Tutup
+				</button>
+			</div>
+		</div>
+	</div>
 </div>
 
 <script>
@@ -98,12 +152,54 @@ function rpsPage(semesters) {
 		selected: semesters[0]?.value ?? 1,
 		courses: semesters[0]?.courses ?? [],
 		preview: null,
+		commentsOpen: false,
+		commentsRpsId: null,
+		commentsMataKuliah: '',
+		comments: [],
+		
 		apply() {
 			const s = this.all.find(s => s.value === this.selected);
 			this.courses = s ? s.courses : [];
 		},
+		
 		view(course) { this.preview = course; },
+		
 		download(course) { alert('Unduh: ' + course.name); },
+		
+		openComments(rpsId, mataKuliah) {
+			this.commentsRpsId = rpsId;
+			this.commentsMataKuliah = mataKuliah;
+			this.commentsOpen = true;
+			this.loadComments();
+		},
+
+		closeComments() {
+			this.commentsOpen = false;
+			this.commentsRpsId = null;
+			this.commentsMataKuliah = '';
+			this.comments = [];
+		},
+
+		async loadComments() {
+			try {
+				const response = await fetch(`/api/rps/${this.commentsRpsId}/suggestions`);
+				const data = await response.json();
+				this.comments = data.suggestions || [];
+			} catch (error) {
+				console.error('Error loading comments:', error);
+			}
+		},
+
+		formatDate(dateString) {
+			const date = new Date(dateString);
+			return date.toLocaleDateString('id-ID', {
+				year: 'numeric',
+				month: 'long',
+				day: 'numeric',
+				hour: '2-digit',
+				minute: '2-digit'
+			});
+		}
 	};
 }
 </script>

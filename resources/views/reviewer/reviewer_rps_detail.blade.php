@@ -155,5 +155,95 @@
             </div>
         </div>
     </div>
+
+    <!-- Masukan dan Saran dari Mahasiswa -->
+    <div x-data="suggestionManager({{ $rps->rps_id }})" @init="init()" class="bg-white rounded-xl p-6 shadow-sm ring-1 ring-slate-100">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold text-slate-900">Masukan dan Saran dari Mahasiswa</h2>
+            <button @click="loadSuggestions()" class="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
+                <span class="i-heroicons-arrow-path text-lg"></span>
+            </button>
+        </div>
+
+        <div class="space-y-4">
+            <template x-for="suggestion in suggestions" :key="suggestion.suggestion_id">
+                <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                    <div class="flex items-start justify-between mb-3">
+                        <div>
+                            <p class="font-semibold text-slate-800" x-text="suggestion.username"></p>
+                            <p class="text-xs text-slate-500" x-text="formatDate(suggestion.created_at)"></p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <select @change="updateStatus(suggestion.suggestion_id, $event.target.value)" :value="suggestion.status" class="text-xs px-2 py-1 rounded-full border border-slate-300 focus:ring-2 focus:ring-emerald-500">
+                                <option value="pending">Pending</option>
+                                <option value="reviewed">Reviewed</option>
+                                <option value="approved">Approved</option>
+                            </select>
+                        </div>
+                    </div>
+                    <p class="text-slate-700 text-sm" x-text="suggestion.saran"></p>
+                </div>
+            </template>
+
+            <div x-show="!suggestions.length" class="text-center py-8 text-slate-500">
+                <p class="text-sm">Belum ada masukan dari mahasiswa.</p>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script>
+function suggestionManager(rpsId) {
+    return {
+        rpsId: rpsId,
+        suggestions: [],
+        
+        async loadSuggestions() {
+            try {
+                const response = await fetch(`/api/rps/${this.rpsId}/suggestions`);
+                const data = await response.json();
+                this.suggestions = data.suggestions || [];
+            } catch (error) {
+                console.error('Error loading suggestions:', error);
+            }
+        },
+
+        async updateStatus(suggestionId, status) {
+            try {
+                const response = await fetch(`/api/suggestions/${suggestionId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    },
+                    body: JSON.stringify({ status: status })
+                });
+
+                if (response.ok) {
+                    await this.loadSuggestions();
+                } else {
+                    alert('Gagal mengubah status');
+                }
+            } catch (error) {
+                console.error('Error updating status:', error);
+            }
+        },
+
+        formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('id-ID', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        },
+
+        init() {
+            this.loadSuggestions();
+        }
+    };
+}
+</script>
 @endsection

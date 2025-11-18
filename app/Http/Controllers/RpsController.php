@@ -36,8 +36,8 @@ class RpsController extends Controller
         
         // Ambil data user yang sedang login (dosen pengembang)
         $user = Auth::user();
-        $dosenPengembang = $user->name ?? 'Dosen';
-        $dosenPengembangId = $user->id ?? null;
+        $dosenPengembang = $user->nama ?? 'Dosen';
+        $dosenPengembangId = $user->user_id ?? null;
         
         // Data CPL-PRODI (kode dan deskripsi terpisah)
         $cplCodes = ['CP-1', 'CP-2', 'CP-3', 'CP-4', 'CP-5', 'CP-6', 'CP-7', 'CP-8'];
@@ -69,6 +69,15 @@ class RpsController extends Controller
             'UAS',
         ];
         
+        // Cek apakah ada RPS yang akan di-edit (dari query parameter rps_id)
+        $rpsData = null;
+        if ($request->has('rps_id')) {
+            $rpsData = Rps::where('rps_id', $request->rps_id)
+                ->where('dosen_id', Auth::id())
+                ->with('aktivitasPembelajaran')
+                ->first();
+        }
+        
         return view('dosen.dosen_input_rps', [
             'code' => $code,
             'allMataKuliah' => $allMataKuliah,
@@ -80,6 +89,7 @@ class RpsController extends Controller
             'ikCodes' => $ikCodes,
             'ikDescriptions' => $ikDescriptions,
             'asesmenModels' => $asesmenModels,
+            'rpsData' => $rpsData,
         ]);
     }
 
@@ -108,7 +118,9 @@ class RpsController extends Controller
             'semester' => 'required|integer|min:1',
             'bahan_kajian' => 'nullable|string',
             'tanggal_penyusunan' => 'required|string',
+            'dosen_pengembang' => 'required|string',
             'koordinasi_bk' => 'required|string',
+            'kaprodi' => 'required|string',
             'cpl_prodi' => 'required|array|min:1',
             'indikator' => 'required|array|min:1',
             'cpmk_kode' => 'nullable|array',
@@ -131,7 +143,9 @@ class RpsController extends Controller
             'sks.required' => 'SKS wajib diisi',
             'semester.required' => 'Semester wajib diisi',
             'tanggal_penyusunan.required' => 'Tanggal penyusunan wajib diisi',
-            'koordinasi_bk.required' => 'Koordinasi BK wajib dipilih',
+            'dosen_pengembang.required' => 'Nama Dosen Pengembang RPS wajib diisi',
+            'koordinasi_bk.required' => 'Nama Koordinasi BK wajib diisi',
+            'kaprodi.required' => 'Nama Kaprodi wajib diisi',
             'cpl_prodi.required' => 'CPL-PRODI wajib dipilih minimal 1',
             'indikator.required' => 'Indikator wajib dipilih minimal 1',
             'deskripsi_mk.required' => 'Deskripsi mata kuliah wajib diisi',
@@ -179,37 +193,79 @@ class RpsController extends Controller
             // Persiapkan data korelasi
             $korelasiData = $request->korelasi ?? [];
 
-            // Simpan RPS
-            $rps = Rps::create([
-                'dosen_id' => Auth::id(),
-                'template_id' => null,
-                'kode_matakuliah' => $request->kode_matakuliah,
-                'nama_matakuliah' => $request->nama_matakuliah,
-                'sks' => $request->sks,
-                'semester' => $request->semester,
-                'bahan_kajian' => $request->bahan_kajian,
-                'tanggal_penyusunan' => $request->tanggal_penyusunan,
-                'dosen_pengembang' => $request->dosen_pengembang,
-                'dosen_pengembang_id' => $request->dosen_pengembang_id,
-                'koordinasi_bk' => $request->koordinasi_bk,
-                'kaprodi' => $request->kaprodi ?? 'Ricky Akbar, S.Kom, M.Kom',
-                'cpl_prodi' => $request->cpl_prodi,
-                'indikator' => $request->indikator,
-                'cpmk' => $cpmkData,
-                'korelasi' => $korelasiData,
-                'asesmen' => $asesmenData,
-                'deskripsi_mk' => $request->deskripsi_mk,
-                'materi_pembelajaran' => $request->materi_pembelajaran ?? [],
-                'pustaka_utama' => $request->pustaka_utama,
-                'pustaka_pendukung' => $request->pustaka_pendukung ?? [],
-                'perangkat_lunak' => $request->perangkat_lunak ?? [],
-                'perangkat_keras' => $request->perangkat_keras ?? [],
-                'dosen_pengampu' => $request->dosen_pengampu ?? [],
-                'mk_prasyarat' => $mkPrasyaratData,
-                'status' => 'submitted',
-                'submitted_at' => now(),
-                'template_content' => '',
-            ]);
+            // Cek apakah ini update atau create
+            $rpsId = $request->input('rps_id');
+            $isUpdate = !empty($rpsId);
+            
+            if ($isUpdate) {
+                // Update RPS yang sudah ada
+                $rps = Rps::where('rps_id', $rpsId)
+                    ->where('dosen_id', Auth::id())
+                    ->firstOrFail();
+                
+                $rps->update([
+                    'kode_matakuliah' => $request->kode_matakuliah,
+                    'nama_matakuliah' => $request->nama_matakuliah,
+                    'sks' => $request->sks,
+                    'semester' => $request->semester,
+                    'bahan_kajian' => $request->bahan_kajian,
+                    'tanggal_penyusunan' => $request->tanggal_penyusunan,
+                    'dosen_pengembang' => $request->dosen_pengembang,
+                    'dosen_pengembang_id' => Auth::id(),
+                    'koordinasi_bk' => $request->koordinasi_bk,
+                    'kaprodi' => $request->kaprodi,
+                    'cpl_prodi' => $request->cpl_prodi,
+                    'indikator' => $request->indikator,
+                    'cpmk' => $cpmkData,
+                    'korelasi' => $korelasiData,
+                    'asesmen' => $asesmenData,
+                    'deskripsi_mk' => $request->deskripsi_mk,
+                    'materi_pembelajaran' => $request->materi_pembelajaran ?? [],
+                    'pustaka_utama' => $request->pustaka_utama,
+                    'pustaka_pendukung' => $request->pustaka_pendukung ?? [],
+                    'perangkat_lunak' => $request->perangkat_lunak ?? [],
+                    'perangkat_keras' => $request->perangkat_keras ?? [],
+                    'dosen_pengampu' => $request->dosen_pengampu ?? [],
+                    'mk_prasyarat' => $mkPrasyaratData,
+                    'status' => 'submitted',
+                    'submitted_at' => now(),
+                ]);
+                
+                // Hapus aktivitas pembelajaran lama
+                RpsAktivitasPembelajaran::where('rps_id', $rps->rps_id)->delete();
+            } else {
+                // Create RPS baru
+                $rps = Rps::create([
+                    'dosen_id' => Auth::id(),
+                    'template_id' => null,
+                    'kode_matakuliah' => $request->kode_matakuliah,
+                    'nama_matakuliah' => $request->nama_matakuliah,
+                    'sks' => $request->sks,
+                    'semester' => $request->semester,
+                    'bahan_kajian' => $request->bahan_kajian,
+                    'tanggal_penyusunan' => $request->tanggal_penyusunan,
+                    'dosen_pengembang' => $request->dosen_pengembang,
+                    'dosen_pengembang_id' => Auth::id(),
+                    'koordinasi_bk' => $request->koordinasi_bk,
+                    'kaprodi' => $request->kaprodi,
+                    'cpl_prodi' => $request->cpl_prodi,
+                    'indikator' => $request->indikator,
+                    'cpmk' => $cpmkData,
+                    'korelasi' => $korelasiData,
+                    'asesmen' => $asesmenData,
+                    'deskripsi_mk' => $request->deskripsi_mk,
+                    'materi_pembelajaran' => $request->materi_pembelajaran ?? [],
+                    'pustaka_utama' => $request->pustaka_utama,
+                    'pustaka_pendukung' => $request->pustaka_pendukung ?? [],
+                    'perangkat_lunak' => $request->perangkat_lunak ?? [],
+                    'perangkat_keras' => $request->perangkat_keras ?? [],
+                    'dosen_pengampu' => $request->dosen_pengampu ?? [],
+                    'mk_prasyarat' => $mkPrasyaratData,
+                    'status' => 'submitted',
+                    'submitted_at' => now(),
+                    'template_content' => '',
+                ]);
+            }
 
             // Simpan Aktivitas Pembelajaran
             if ($request->has('aktivitas_minggu')) {
@@ -247,9 +303,10 @@ class RpsController extends Controller
             $rps->update(['pdf_path' => $filepath]);
 
             // Redirect ke halaman RPS list dengan success message
+            $message = $isUpdate ? 'RPS berhasil diperbarui dan PDF telah di-generate!' : 'RPS berhasil disimpan dan PDF telah di-generate!';
             return redirect()
                 ->to(route('fakultas.rps', ['code' => $code]) . '?role=dosen')
-                ->with('success', 'RPS berhasil disimpan dan PDF telah di-generate!')
+                ->with('success', $message)
                 ->with('new_rps_id', $rps->rps_id);
 
         } catch (\Exception $e) {

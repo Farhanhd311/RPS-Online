@@ -4,7 +4,7 @@
 <!-- Alpine.js Check -->
 <div x-data="{ loaded: true }" x-init="console.log('Alpine.js is working!')" style="display: none;"></div>
 
-<div x-data='inputRpsPage(@json($allMataKuliah), @json($semesters), @json($dosenPengembang), {{ $dosenPengembangId ?? 'null' }}, @json($cplCodes ?? []), @json($cplDescriptions ?? []), @json($ikCodes ?? []), @json($ikDescriptions ?? []), @json($asesmenModels ?? []))' class="space-y-6 mt-4">
+<div x-data='inputRpsPage(@json($allMataKuliah), @json($semesters), @json($dosenPengembang), {{ $dosenPengembangId ?? 'null' }}, @json($cplCodes ?? []), @json($cplDescriptions ?? []), @json($ikCodes ?? []), @json($ikDescriptions ?? []), @json($asesmenModels ?? []), @json($rpsData ?? null))' class="space-y-6 mt-4" @init="init()">
     @php($userRole = auth()->user()->role ?? 'dosen')
     <div class="flex items-center gap-3 mb-6">
         <a href="{{ route('fakultas.rps', ['code'=>$code]) }}?role={{ $userRole }}" class="inline-flex items-center">
@@ -109,6 +109,7 @@
                   console.log('Submitting - Semester:', formData.semester, 'type:', typeof formData.semester);
               ">
             @csrf
+            <input type="hidden" name="rps_id" :value="rpsData ? rpsData.rps_id : ''">
             <input type="hidden" name="kode_matakuliah" x-model="formData.kode_matakuliah" required>
             <input type="hidden" name="nama_matakuliah" x-model="formData.nama_matakuliah">
             <input type="hidden" name="dosen_pengembang" :value="dosenPengembang">
@@ -218,13 +219,15 @@
                     <div>
                         <label class="block text-sm font-semibold text-slate-800 mb-2">
                             <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold mr-2">1</span>
-                            Dosen Pengembang RPS
+                            Dosen Pengembang RPS <span class="text-red-500">*</span>
                         </label>
-                        <input type="text"
-                            :value="dosenPengembang"
-                            readonly
-                            class="w-full rounded-xl border border-slate-300 pl-4 pr-4 py-3 text-slate-800 bg-slate-50 shadow-sm cursor-not-allowed font-medium"
+                        <input type="text" name="dosen_pengembang"
+                            x-model="formData.dosen_pengembang"
+                            placeholder="Masukkan nama dosen pengembang RPS"
+                            required
+                            class="w-full rounded-xl border border-slate-300 pl-4 pr-4 py-3 text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white shadow-sm"
                         />
+                        <p class="mt-1 text-xs text-slate-500">Contoh: Dr. Nama Dosen, S.Kom, M.Kom</p>
                     </div>
 
                     <!-- Koordinasi BK -->
@@ -233,31 +236,28 @@
                             <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold mr-2">2</span>
                             Koordinasi BK <span class="text-red-500">*</span>
                         </label>
-                        <div class="relative">
-                            <select name="koordinasi_bk" x-model="formData.koordinasi_bk" required
-                                class="w-full appearance-none rounded-xl border border-slate-300 pl-4 pr-10 py-3 text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white shadow-sm cursor-pointer">
-                                <option value="">-- Pilih Koordinasi BK --</option>
-                                <option value="adi_arga">Adi Arga Arifnur, M.Kom</option>
-                                <option value="jefril_rahmadoni">Jefril Rahmadoni, M.Kom</option>
-                                <option value="nisa_dwi">Nisa Dwi Angresti, M.Kom</option>
-                                <option value="surya_afnarius">Prof. Ir. Surya Afnarius, MSc, PhD</option>
-                            </select>
-                            <span class="pointer-events-none i-heroicons-chevron-down-20-solid absolute right-3 top-1/2 -translate-y-1/2 text-emerald-600"></span>
-                        </div>
-                        <p class="mt-1 text-xs text-slate-500">Pilih dosen koordinasi BK yang sesuai</p>
+                        <input type="text" name="koordinasi_bk"
+                            x-model="formData.koordinasi_bk"
+                            placeholder="Masukkan nama dosen koordinasi BK"
+                            required
+                            class="w-full rounded-xl border border-slate-300 pl-4 pr-4 py-3 text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white shadow-sm"
+                        />
+                        <p class="mt-1 text-xs text-slate-500">Contoh: Adi Arga Arifnur, M.Kom</p>
                     </div>
 
                     <!-- Kaprodi -->
                     <div>
                         <label class="block text-sm font-semibold text-slate-800 mb-2">
                             <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold mr-2">3</span>
-                            Kaprodi
+                            Kaprodi <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" name="kaprodi" 
-                            value="Ricky Akbar, S.Kom, M.Kom"
-                            readonly
-                            class="w-full rounded-xl border border-slate-300 pl-4 pr-4 py-3 text-slate-800 bg-slate-50 shadow-sm cursor-not-allowed font-medium"
+                        <input type="text" name="kaprodi"
+                            x-model="formData.kaprodi"
+                            placeholder="Masukkan nama Kaprodi"
+                            required
+                            class="w-full rounded-xl border border-slate-300 pl-4 pr-4 py-3 text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white shadow-sm"
                         />
+                        <p class="mt-1 text-xs text-slate-500">Contoh: Ricky Akbar, S.Kom, M.Kom</p>
                     </div>
                 </div>
             </div>
@@ -1023,9 +1023,10 @@
 </div>
 
 <script>
-function inputRpsPage(allMataKuliah, semesters, dosenPengembang, dosenPengembangId, cplCodes, cplDescriptions, ikCodes, ikDescriptions, asesmenModels) {
+function inputRpsPage(allMataKuliah, semesters, dosenPengembang, dosenPengembangId, cplCodes, cplDescriptions, ikCodes, ikDescriptions, asesmenModels, rpsData) {
     console.log('RPS Page Initialized');
     console.log('Total Mata Kuliah:', allMataKuliah ? allMataKuliah.length : 0);
+    console.log('RPS Data:', rpsData);
     
     return {
         allMataKuliah: allMataKuliah || [],
@@ -1038,6 +1039,7 @@ function inputRpsPage(allMataKuliah, semesters, dosenPengembang, dosenPengembang
         ikCodes: ikCodes || [],
         ikDescriptions: ikDescriptions || {},
         asesmenModels: asesmenModels || [],
+        rpsData: rpsData || null,
         formData: {
             semester: 0,
             kode_matakuliah: '',
@@ -1049,7 +1051,9 @@ function inputRpsPage(allMataKuliah, semesters, dosenPengembang, dosenPengembang
             semester_display: '',
             tanggal_penyusunan: '',
             tanggal_penyusunan_display: '',
+            dosen_pengembang: '',
             koordinasi_bk: '',
+            kaprodi: '',
             selectedCpl: [],
             selectedIk: [],
             cpmkList: [
@@ -1295,6 +1299,143 @@ function inputRpsPage(allMataKuliah, semesters, dosenPengembang, dosenPengembang
                 this.formData.aktivitasPembelajaranList.splice(index, 1);
             }
         },
+        loadRpsData() {
+            // Load data RPS yang sudah ada untuk edit
+            if (!this.rpsData) return;
+            
+            console.log('Loading RPS data:', this.rpsData);
+            
+            const rps = this.rpsData;
+            
+            // Set mata kuliah
+            this.formData.kode_matakuliah = rps.kode_matakuliah || '';
+            this.formData.nama_matakuliah = rps.nama_matakuliah || '';
+            this.formData.kode = rps.kode_matakuliah || '';
+            this.formData.sks_numeric = parseInt(rps.sks, 10) || 0;
+            this.formData.sks = (rps.sks || 0) + ' SKS';
+            this.formData.semester = parseInt(rps.semester, 10) || 0;
+            this.formData.semester_display = 'Semester ' + (rps.semester || '-');
+            
+            // Set basic fields
+            this.formData.bahan_kajian = rps.bahan_kajian || '';
+            this.formData.tanggal_penyusunan = rps.tanggal_penyusunan || '';
+            this.formData.tanggal_penyusunan_display = rps.tanggal_penyusunan ? 
+                new Date(rps.tanggal_penyusunan).toLocaleDateString('id-ID', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                }) : '';
+            
+            // Load Otorisasi fields
+            this.formData.dosen_pengembang = rps.dosen_pengembang || '';
+            this.formData.koordinasi_bk = rps.koordinasi_bk || '';
+            this.formData.kaprodi = rps.kaprodi || '';
+            this.formData.deskripsi_mk = rps.deskripsi_mk || '';
+            
+            // Load CPL-PRODI
+            if (rps.cpl_prodi && Array.isArray(rps.cpl_prodi)) {
+                this.formData.selectedCpl = rps.cpl_prodi;
+            }
+            
+            // Load Indikator
+            if (rps.indikator && Array.isArray(rps.indikator)) {
+                this.formData.selectedIk = rps.indikator;
+            }
+            
+            // Load CPMK
+            if (rps.cpmk && Array.isArray(rps.cpmk) && rps.cpmk.length > 0) {
+                this.formData.cpmkList = rps.cpmk.map(c => ({
+                    deskripsi: c.deskripsi || ''
+                }));
+                // Rebuild korelasi array
+                this.formData.korelasi = rps.cpmk.map(() => ({ cpl: [], ik: [] }));
+            }
+            
+            // Load Korelasi
+            if (rps.korelasi && Array.isArray(rps.korelasi)) {
+                this.formData.korelasi = rps.korelasi;
+            }
+            
+            // Load Asesmen
+            if (rps.asesmen && Array.isArray(rps.asesmen) && rps.asesmen.length > 0) {
+                this.formData.asesmenList = rps.asesmen.map(a => ({
+                    jenis: a.jenis || '',
+                    bobot: a.bobot || '',
+                    keterangan: a.keterangan || ''
+                }));
+            }
+            
+            // Load Materi Pembelajaran
+            if (rps.materi_pembelajaran && Array.isArray(rps.materi_pembelajaran) && rps.materi_pembelajaran.length > 0) {
+                this.formData.materiList = rps.materi_pembelajaran.map(m => ({
+                    isi: m.isi || m
+                }));
+            }
+            
+            // Load Pustaka Utama
+            if (rps.pustaka_utama && Array.isArray(rps.pustaka_utama) && rps.pustaka_utama.length > 0) {
+                this.formData.pustakaUtamaList = rps.pustaka_utama.map(p => ({
+                    isi: p.isi || p
+                }));
+            }
+            
+            // Load Pustaka Pendukung
+            if (rps.pustaka_pendukung && Array.isArray(rps.pustaka_pendukung) && rps.pustaka_pendukung.length > 0) {
+                this.formData.pustakaPendukungList = rps.pustaka_pendukung.map(p => ({
+                    isi: p.isi || p
+                }));
+            }
+            
+            // Load Perangkat Lunak
+            if (rps.perangkat_lunak && Array.isArray(rps.perangkat_lunak) && rps.perangkat_lunak.length > 0) {
+                this.formData.perangkatLunakList = rps.perangkat_lunak.map(p => ({
+                    isi: p.isi || p
+                }));
+            }
+            
+            // Load Perangkat Keras
+            if (rps.perangkat_keras && Array.isArray(rps.perangkat_keras) && rps.perangkat_keras.length > 0) {
+                this.formData.perangkatKerasList = rps.perangkat_keras.map(p => ({
+                    isi: p.isi || p
+                }));
+            }
+            
+            // Load Dosen Pengampu
+            if (rps.dosen_pengampu && Array.isArray(rps.dosen_pengampu) && rps.dosen_pengampu.length > 0) {
+                this.formData.dosenPengampuList = rps.dosen_pengampu.map(d => ({
+                    nama: d.nama || d
+                }));
+            }
+            
+            // Load MK Prasyarat
+            if (rps.mk_prasyarat && Array.isArray(rps.mk_prasyarat) && rps.mk_prasyarat.length > 0) {
+                this.formData.mkPrasyaratList = rps.mk_prasyarat.map(m => ({
+                    nama: m.nama || m
+                }));
+            }
+            
+            // Load Aktivitas Pembelajaran dari relasi (cek kedua nama: camelCase dan snake_case)
+            const aktivitasList = rps.aktivitas_pembelajaran || rps.aktivitasPembelajaran || [];
+            if (aktivitasList && Array.isArray(aktivitasList) && aktivitasList.length > 0) {
+                this.formData.aktivitasPembelajaranList = aktivitasList.map(a => ({
+                    minggu_ke: a.minggu_ke || '',
+                    cpmk_kode: a.cpmk_kode || '',
+                    indikator_penilaian: a.indikator_penilaian || '',
+                    bentuk_penilaian_jenis: a.bentuk_penilaian_jenis || '',
+                    bentuk_penilaian_bobot: a.bentuk_penilaian_bobot || '',
+                    aktivitas_sinkron_luring: a.aktivitas_sinkron_luring || '',
+                    aktivitas_sinkron_daring: a.aktivitas_sinkron_daring || '',
+                    aktivitas_asinkron_mandiri: a.aktivitas_asinkron_mandiri || '',
+                    aktivitas_asinkron_kolaboratif: a.aktivitas_asinkron_kolaboratif || '',
+                    media: a.media || '',
+                    materi_pembelajaran: a.materi_pembelajaran || '',
+                    referensi: a.referensi || ''
+                }));
+            }
+            
+            console.log('RPS data loaded successfully');
+            console.log('Aktivitas Pembelajaran:', this.formData.aktivitasPembelajaranList);
+        },
         init() {
             // Pre-select mata kuliah dari URL parameter jika ada
             const urlParams = new URLSearchParams(window.location.search);
@@ -1302,7 +1443,10 @@ function inputRpsPage(allMataKuliah, semesters, dosenPengembang, dosenPengembang
             const semesterParam = urlParams.get('semester');
             
             setTimeout(() => {
-                if (kodeParam) {
+                // Jika ada RPS data, load itu
+                if (this.rpsData) {
+                    this.loadRpsData();
+                } else if (kodeParam) {
                     // Find mata kuliah by kode
                     const mk = this.allMataKuliah.find(m => 
                         (m.kode_matakuliah == kodeParam || m.id == kodeParam)
@@ -1320,8 +1464,19 @@ function inputRpsPage(allMataKuliah, semesters, dosenPengembang, dosenPengembang
                 return false;
             }
 
-            if (!this.formData.koordinasi_bk) {
-                alert('Pilih Koordinasi BK terlebih dahulu');
+            // Validasi Otorisasi
+            if (!this.formData.dosen_pengembang || this.formData.dosen_pengembang.trim() === '') {
+                alert('Nama Dosen Pengembang RPS wajib diisi');
+                return false;
+            }
+
+            if (!this.formData.koordinasi_bk || this.formData.koordinasi_bk.trim() === '') {
+                alert('Nama Koordinasi BK wajib diisi');
+                return false;
+            }
+
+            if (!this.formData.kaprodi || this.formData.kaprodi.trim() === '') {
+                alert('Nama Kaprodi wajib diisi');
                 return false;
             }
 

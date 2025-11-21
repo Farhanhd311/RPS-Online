@@ -72,10 +72,52 @@ class RpsController extends Controller
         // Cek apakah ada RPS yang akan di-edit (dari query parameter rps_id)
         $rpsData = null;
         if ($request->has('rps_id')) {
-            $rpsData = Rps::where('rps_id', $request->rps_id)
+            $rps = Rps::where('rps_id', $request->rps_id)
                 ->where('dosen_id', Auth::id())
                 ->with('aktivitasPembelajaran')
                 ->first();
+            
+            if ($rps) {
+                // Reload aktivitas pembelajaran untuk memastikan data ter-load
+                $rps->load('aktivitasPembelajaran');
+                
+                // Convert to array dan pastikan aktivitasPembelajaran ter-serialize
+                $rpsData = $rps->toArray();
+                
+                // Pastikan aktivitasPembelajaran ada dalam array dengan kedua nama (camelCase dan snake_case)
+                $aktivitasCollection = $rps->aktivitasPembelajaran;
+                if ($aktivitasCollection && $aktivitasCollection->count() > 0) {
+                    $aktivitasArray = $aktivitasCollection->map(function($item) {
+                        return [
+                            'minggu_ke' => $item->minggu_ke ?? '',
+                            'cpmk_kode' => $item->cpmk_kode ?? '',
+                            'indikator_penilaian' => $item->indikator_penilaian ?? '',
+                            'bentuk_penilaian_jenis' => $item->bentuk_penilaian_jenis ?? '',
+                            'bentuk_penilaian_bobot' => $item->bentuk_penilaian_bobot ?? '',
+                            'aktivitas_sinkron_luring' => $item->aktivitas_sinkron_luring ?? '',
+                            'aktivitas_sinkron_daring' => $item->aktivitas_sinkron_daring ?? '',
+                            'aktivitas_asinkron_mandiri' => $item->aktivitas_asinkron_mandiri ?? '',
+                            'aktivitas_asinkron_kolaboratif' => $item->aktivitas_asinkron_kolaboratif ?? '',
+                            'media' => $item->media ?? '',
+                            'materi_pembelajaran' => $item->materi_pembelajaran ?? '',
+                            'referensi' => $item->referensi ?? '',
+                        ];
+                    })->toArray();
+                    // Set dengan kedua nama untuk kompatibilitas
+                    $rpsData['aktivitasPembelajaran'] = $aktivitasArray;
+                    $rpsData['aktivitas_pembelajaran'] = $aktivitasArray;
+                } else {
+                    $rpsData['aktivitasPembelajaran'] = [];
+                    $rpsData['aktivitas_pembelajaran'] = [];
+                }
+                
+                // Log untuk debugging
+                \Log::info('RPS Data for edit', [
+                    'rps_id' => $rps->rps_id,
+                    'aktivitas_count' => $aktivitasCollection ? $aktivitasCollection->count() : 0,
+                    'aktivitas_data' => $rpsData['aktivitasPembelajaran'] ?? []
+                ]);
+            }
         }
         
         return view('dosen.dosen_input_rps', [
@@ -291,6 +333,10 @@ class RpsController extends Controller
 
             DB::commit();
 
+            // Refresh RPS dari database untuk memastikan data terbaru
+            $rps->refresh();
+            $rps->load('aktivitasPembelajaran');
+
             // Generate dan simpan PDF ke storage
             $pdf = Pdf::loadView('pdf.rps_template', ['rps' => $rps]);
             $filename = 'RPS_' . $rps->kode_matakuliah . '_' . date('Ymd_His') . '.pdf';
@@ -336,8 +382,21 @@ class RpsController extends Controller
         
         // Jika belum ada, generate ulang
         $rps->load('aktivitasPembelajaran');
+        
+        // Konfigurasi PDF dengan margin yang sesuai
         $pdf = Pdf::loadView('pdf.rps_template', ['rps' => $rps]);
         $pdf->setPaper('A4', 'portrait');
+        
+        // Set margin untuk DOMPDF (1 inci = 72 pt)
+        $pdf->setOptions([
+            'margin_top' => 72,    // 1 inci
+            'margin_right' => 72,  // 1 inci
+            'margin_bottom' => 72, // 1 inci
+            'margin_left' => 85,   // 1.18 inci (sedikit lebih lebar untuk penjilidan)
+            'defaultFont' => 'times',
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => true
+        ]);
         
         return $pdf->stream('RPS_' . $rps->kode_matakuliah . '.pdf');
     }
@@ -381,8 +440,21 @@ class RpsController extends Controller
         
         // Jika belum ada, generate ulang
         $rps->load('aktivitasPembelajaran');
+        
+        // Konfigurasi PDF dengan margin yang sesuai
         $pdf = Pdf::loadView('pdf.rps_template', ['rps' => $rps]);
         $pdf->setPaper('A4', 'portrait');
+        
+        // Set margin untuk DOMPDF (1 inci = 72 pt)
+        $pdf->setOptions([
+            'margin_top' => 72,    // 1 inci
+            'margin_right' => 72,  // 1 inci
+            'margin_bottom' => 72, // 1 inci
+            'margin_left' => 85,   // 1.18 inci (sedikit lebih lebar untuk penjilidan)
+            'defaultFont' => 'times',
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => true
+        ]);
         
         return $pdf->stream('RPS_' . $rps->kode_matakuliah . '.pdf');
     }

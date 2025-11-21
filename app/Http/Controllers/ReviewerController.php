@@ -84,7 +84,7 @@ class ReviewerController extends Controller
     {
         $rps = Rps::with(['dosen', 'aktivitasPembelajaran'])
             ->where('rps_id', $rps_id)
-            ->whereIn('status', ['draft', 'submitted'])
+            ->whereIn('status', ['draft', 'submitted', 'approved', 'rejected'])
             ->firstOrFail();
 
         return view('reviewer.reviewer_rps_detail', [
@@ -127,9 +127,18 @@ class ReviewerController extends Controller
 
         DB::beginTransaction();
         try {
-            $rps = Rps::where('rps_id', $rps_id)
-                ->whereIn('status', ['draft', 'submitted'])
-                ->firstOrFail();
+            $rps = Rps::where('rps_id', $rps_id)->first();
+            
+            if (!$rps) {
+                return back()
+                    ->with('error', 'RPS tidak ditemukan.');
+            }
+
+            // Hanya bisa approve RPS yang belum published
+            if ($rps->status === 'published') {
+                return back()
+                    ->with('error', 'RPS yang sudah dipublikasikan tidak dapat diubah statusnya.');
+            }
 
             $rps->update([
                 'status' => 'approved',
@@ -141,7 +150,7 @@ class ReviewerController extends Controller
             DB::commit();
 
             return redirect()
-                ->route('reviewer.review_rps', ['code' => $code])
+                ->to(route('fakultas.rps', ['code' => $code]) . '?role=reviewer')
                 ->with('success', 'RPS berhasil disetujui!');
 
         } catch (\Exception $e) {
@@ -164,9 +173,18 @@ class ReviewerController extends Controller
 
         DB::beginTransaction();
         try {
-            $rps = Rps::where('rps_id', $rps_id)
-                ->whereIn('status', ['draft', 'submitted'])
-                ->firstOrFail();
+            $rps = Rps::where('rps_id', $rps_id)->first();
+            
+            if (!$rps) {
+                return back()
+                    ->with('error', 'RPS tidak ditemukan.');
+            }
+
+            // Hanya bisa reject RPS yang belum published
+            if ($rps->status === 'published') {
+                return back()
+                    ->with('error', 'RPS yang sudah dipublikasikan tidak dapat diubah statusnya.');
+            }
 
             $rps->update([
                 'status' => 'rejected',
@@ -178,7 +196,7 @@ class ReviewerController extends Controller
             DB::commit();
 
             return redirect()
-                ->route('reviewer.review_rps', ['code' => $code])
+                ->to(route('fakultas.rps', ['code' => $code]) . '?role=reviewer')
                 ->with('success', 'RPS telah ditolak dengan catatan.');
 
         } catch (\Exception $e) {

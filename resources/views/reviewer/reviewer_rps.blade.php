@@ -37,14 +37,18 @@
 							<p class="text-slate-800 font-medium text-base" x-text="c.name"></p>
 						</div>
 						<div class="flex items-center gap-4 ml-6">
-							<a href="#" @click.prevent="view(c)" class="inline-flex items-center gap-2 text-sm text-emerald-700 hover:text-emerald-800 font-medium transition-colors">
-								<span class="i-heroicons-eye text-lg"></span>
-								<span>Lihat</span>
-							</a>
-							<a href="{{ route('reviewer.review_rps', ['code'=>$code]) }}" class="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
-								<span class="i-heroicons-clipboard-document-check text-lg"></span>
-								<span>Review</span>
-							</a>
+							<template x-if="c.rps_id && c.rps_status === 'approved'">
+								<a :href="`/reviewer/{{ $code }}/rps/${c.rps_id}/detail`" class="inline-flex items-center gap-2 text-sm text-green-600 hover:text-green-700 font-medium transition-colors">
+									<span class="i-heroicons-check-circle text-lg"></span>
+									<span>Accepted</span>
+								</a>
+							</template>
+							<template x-if="c.rps_id && c.rps_status !== 'approved'">
+								<a :href="`/reviewer/{{ $code }}/rps/${c.rps_id}/detail`" class="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
+									<span class="i-heroicons-clipboard-document-check text-lg"></span>
+									<span>Review</span>
+								</a>
+							</template>
 							<button @click="openComments(c.rps_id, c.name)" class="inline-flex items-center gap-2 text-sm text-purple-600 hover:text-purple-700 font-medium transition-colors">
 								<span class="i-heroicons-chat-bubble-left-right text-lg"></span>
 								<span>Komentar</span>

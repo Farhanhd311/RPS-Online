@@ -112,8 +112,9 @@
             <input type="hidden" name="rps_id" :value="rpsData ? rpsData.rps_id : ''">
             <input type="hidden" name="kode_matakuliah" x-model="formData.kode_matakuliah" required>
             <input type="hidden" name="nama_matakuliah" x-model="formData.nama_matakuliah">
-            <input type="hidden" name="dosen_pengembang" :value="dosenPengembang">
+            <input type="hidden" name="dosen_pengembang" x-model="formData.dosen_pengembang">
             <input type="hidden" name="dosen_pengembang_id" :value="dosenPengembangId">
+            <input type="hidden" name="koordinasi_bk" x-model="formData.koordinasi_bk">
             <input type="hidden" name="semester" :value="Number(formData.semester) || 0">
             <input type="hidden" name="sks" :value="Number(formData.sks_numeric) || 0">
             <input type="hidden" name="tanggal_penyusunan" x-model="formData.tanggal_penyusunan">
@@ -1301,9 +1302,14 @@ function inputRpsPage(allMataKuliah, semesters, dosenPengembang, dosenPengembang
         },
         loadRpsData() {
             // Load data RPS yang sudah ada untuk edit
-            if (!this.rpsData) return;
+            if (!this.rpsData) {
+                console.log('No RPS data to load');
+                return;
+            }
             
             console.log('Loading RPS data:', this.rpsData);
+            console.log('RPS Data type:', typeof this.rpsData);
+            console.log('RPS Data keys:', Object.keys(this.rpsData));
             
             const rps = this.rpsData;
             
@@ -1415,22 +1421,41 @@ function inputRpsPage(allMataKuliah, semesters, dosenPengembang, dosenPengembang
             }
             
             // Load Aktivitas Pembelajaran dari relasi (cek kedua nama: camelCase dan snake_case)
+            console.log('Full RPS object:', rps);
+            console.log('rps.aktivitas_pembelajaran:', rps.aktivitas_pembelajaran);
+            console.log('rps.aktivitasPembelajaran:', rps.aktivitasPembelajaran);
+            
             const aktivitasList = rps.aktivitas_pembelajaran || rps.aktivitasPembelajaran || [];
+            console.log('Aktivitas List from RPS:', aktivitasList);
+            console.log('Is Array?', Array.isArray(aktivitasList));
+            console.log('Length:', aktivitasList ? aktivitasList.length : 0);
+            
             if (aktivitasList && Array.isArray(aktivitasList) && aktivitasList.length > 0) {
-                this.formData.aktivitasPembelajaranList = aktivitasList.map(a => ({
-                    minggu_ke: a.minggu_ke || '',
-                    cpmk_kode: a.cpmk_kode || '',
-                    indikator_penilaian: a.indikator_penilaian || '',
-                    bentuk_penilaian_jenis: a.bentuk_penilaian_jenis || '',
-                    bentuk_penilaian_bobot: a.bentuk_penilaian_bobot || '',
-                    aktivitas_sinkron_luring: a.aktivitas_sinkron_luring || '',
-                    aktivitas_sinkron_daring: a.aktivitas_sinkron_daring || '',
-                    aktivitas_asinkron_mandiri: a.aktivitas_asinkron_mandiri || '',
-                    aktivitas_asinkron_kolaboratif: a.aktivitas_asinkron_kolaboratif || '',
-                    media: a.media || '',
-                    materi_pembelajaran: a.materi_pembelajaran || '',
-                    referensi: a.referensi || ''
-                }));
+                console.log('Processing aktivitas list, count:', aktivitasList.length);
+                this.formData.aktivitasPembelajaranList = aktivitasList.map((a, idx) => {
+                    console.log(`Processing aktivitas ${idx}:`, a);
+                    return {
+                        minggu_ke: a.minggu_ke || '',
+                        cpmk_kode: a.cpmk_kode || '',
+                        indikator_penilaian: a.indikator_penilaian || '',
+                        bentuk_penilaian_jenis: a.bentuk_penilaian_jenis || '',
+                        bentuk_penilaian_bobot: a.bentuk_penilaian_bobot || '',
+                        aktivitas_sinkron_luring: a.aktivitas_sinkron_luring || '',
+                        aktivitas_sinkron_daring: a.aktivitas_sinkron_daring || '',
+                        aktivitas_asinkron_mandiri: a.aktivitas_asinkron_mandiri || '',
+                        aktivitas_asinkron_kolaboratif: a.aktivitas_asinkron_kolaboratif || '',
+                        media: a.media || '',
+                        materi_pembelajaran: a.materi_pembelajaran || '',
+                        referensi: a.referensi || ''
+                    };
+                });
+                console.log('Mapped Aktivitas Pembelajaran List:', this.formData.aktivitasPembelajaranList);
+            } else {
+                console.log('No aktivitas found or empty array, keeping default or adding one');
+                // Jika tidak ada aktivitas, pastikan minimal ada satu item kosong
+                if (this.formData.aktivitasPembelajaranList.length === 0) {
+                    this.addAktivitasPembelajaran();
+                }
             }
             
             console.log('RPS data loaded successfully');
@@ -1445,6 +1470,7 @@ function inputRpsPage(allMataKuliah, semesters, dosenPengembang, dosenPengembang
             setTimeout(() => {
                 // Jika ada RPS data, load itu
                 if (this.rpsData) {
+                    console.log('RPS Data found in init, calling loadRpsData()');
                     this.loadRpsData();
                 } else if (kodeParam) {
                     // Find mata kuliah by kode

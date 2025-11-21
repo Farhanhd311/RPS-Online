@@ -112,24 +112,9 @@
     <!-- Header -->
     <table>
         <tr>
-            <td rowspan="5" style="width: 80px; text-align: center; vertical-align: middle; border: 1px solid #000;">
+            <td rowspan="5" style="width: 80px; text-align: center; vertical-align: middle; border: 1px solid #000; padding: 5px;">
                 <!-- Logo Universitas Andalas -->
-                <div style="width: 60px; height: 60px; margin: auto; background-color: #2d5016; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative;">
-                    <!-- Pohon Beringin -->
-                    <div style="position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 40px; height: 40px;">
-                        <!-- Batang pohon -->
-                        <div style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 4px; height: 15px; background-color: #8B4513;"></div>
-                        <!-- Daun pohon -->
-                        <div style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); width: 35px; height: 25px; background-color: #228B22; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; opacity: 0.9;"></div>
-                        <!-- Daun tambahan -->
-                        <div style="position: absolute; bottom: 15px; left: 45%; transform: translateX(-50%); width: 20px; height: 15px; background-color: #32CD32; border-radius: 50%; opacity: 0.8;"></div>
-                        <div style="position: absolute; bottom: 15px; right: 45%; transform: translateX(50%); width: 20px; height: 15px; background-color: #32CD32; border-radius: 50%; opacity: 0.8;"></div>
-                    </div>
-                    <!-- Text UNAND -->
-                    <div style="position: absolute; bottom: 2px; color: white; font-weight: bold; font-size: 6pt; text-align: center; line-height: 0.8;">
-                        UNAND
-                    </div>
-                </div>
+                <img src="{{ public_path('images/logo.png') }}" alt="Logo Universitas Andalas" style="width: 65px; height: auto; max-height: 65px; object-fit: contain;">
             </td>
             <td style="text-align: center; font-weight: bold; font-size: 14pt; padding: 3px; border: 1px solid #000; line-height: 1.1;">UNIVERSITAS ANDALAS</td>
         </tr>
